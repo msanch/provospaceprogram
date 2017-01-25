@@ -17,6 +17,8 @@
         <remap from="opp1" to="/vision/$(arg other_side)1" />
         <remap from="opp2" to="/vision/$(arg other_side)2" />
         <remap from="ball" to="/vision/ball" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+        <param name="is_player1" value="$(eval my_number == 1)" />
     </node>
     <node name="controller" pkg="provospaceprogram" type="controller_node.py" output="screen">
         <!-- The controller needs to know which vision msg to listen to -->
