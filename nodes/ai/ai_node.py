@@ -9,6 +9,7 @@ import strategy
 
 
 def update(obj, msg):
+    rospy.loginfo(obj.__name__)
     obj.update(msg)
 
 
@@ -16,8 +17,8 @@ def main():
     rospy.init_node('ai', anonymous=False)
 
     # Get params
-    is_team_home = rospy.get_param('~is_team_home', True)
-    is_player1 = rospy.get_param('~is_player1', True)
+    is_team_home = rospy.get_param('~is_team_home')
+    is_player1 = rospy.get_param('~is_player1')
 
     # Create all soccer objects
     me = soccerobjects.Robot(player1=is_player1)

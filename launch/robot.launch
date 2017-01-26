@@ -11,12 +11,37 @@
     <arg name="other_side" value="home" if="$(eval team_side == 'away')" />
     
     <!-- Hardware agnostic code -->
+    <node name="ball_estimator" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+        <remap from="vision_position" to="/vision/$(arg team_side)1" />
+        <remap from="robot_state" to="ball_state" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+    </node>
+    <node name="ally1_estimator" pkg="provospaceprogram" type="estimatornode.py">
+        <remap from="vision_position" to="/vision/$(arg team_side)1" />
+        <remap from="robot_state" to="ally1_state" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+    </node>
+    <node name="ally2_estimator" pkg="provospaceprogram" type="estimatornode.py">
+        <remap from="vision_position" to="/vision/$(arg team_side)2" />
+        <remap from="robot_state" to="ally2_state" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+    </node>
+    <node name="opponent1_estimator" pkg="provospaceprogram" type="estimatornode.py">
+        <remap from="vision_position" to="/vision/$(arg other_side)1" />
+        <remap from="robot_state" to="opponent1_state" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+    </node>
+    <node name="opponent2_estimator" pkg="provospaceprogram" type="estimatornode.py">
+        <remap from="vision_position" to="/vision/$(arg other_side)2" />
+        <remap from="robot_state" to="opponent2_state" />
+        <param name="is_team_home" value="$(eval team_side == 'home')" />
+    </node>
     <node name="ai" pkg="provospaceprogram" type="ai_node.py" output="screen">
-        <remap from="me" to="/vision/$(arg team_side)$(arg my_number)" />
-        <remap from="ally" to="/vision/$(arg team_side)$(arg ally_number)" />
-        <remap from="opp1" to="/vision/$(arg other_side)1" />
-        <remap from="opp2" to="/vision/$(arg other_side)2" />
-        <remap from="ball" to="/vision/ball" />
+        <remap from="me" to="ally$(arg my_number)_state" />
+        <remap from="ally" to="ally$(arg ally_number)_state" />
+        <remap from="opp1" to="opponent1_state" />
+        <remap from="opp2" to="opponent2_state" />
+        <remap from="ball" to="ball_state" />
         <param name="is_team_home" value="$(eval team_side == 'home')" />
         <param name="is_player1" value="$(eval my_number == 1)" />
     </node>
