@@ -5,14 +5,15 @@ import util
 
 class Robot:
 
-	def __init__(self, player1=True):
+	def __init__(self, player1=True, home_team=True):
 		self.player1 = player1
+		self.home_team = home_team
 		self.x = 0
 		self.y = 0
 		self.theta = 0
 
 	def start_x(self):
-		return -0.5 if self.player1 else -1.5
+		return (-0.5 if self.player1 else -1.5)
 
 	def update(self, msg):
 		self.x = msg.x

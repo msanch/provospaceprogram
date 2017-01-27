@@ -12,7 +12,7 @@
     
     <!-- Hardware agnostic code -->
     <node name="ball_estimator" pkg="provospaceprogram" type="estimatornode.py" output="screen">
-        <remap from="vision_position" to="/vision/$(arg team_side)1" />
+        <remap from="vision_position" to="/vision/ball" />
         <remap from="robot_state" to="ball_state" />
         <param name="is_team_home" value="$(eval team_side == 'home')" />
     </node>
@@ -47,7 +47,7 @@
     </node>
     <node name="controller" pkg="provospaceprogram" type="controller_node.py" output="screen">
         <!-- The controller needs to know which vision msg to listen to -->
-        <remap from="me" to="/vision/$(arg team_side)$(arg my_number)" />
+        <remap from="me" to="ally$(arg my_number)_state" />
         <!-- For simulation, remap the output -->
         <remap from="vel_cmds" to="/$(arg team_side)$(arg my_number)/command" />
     </node>

@@ -8,11 +8,6 @@ import soccerobjects
 import strategy
 
 
-def update(obj, msg):
-    rospy.loginfo(obj.__name__)
-    obj.update(msg)
-
-
 def main():
     rospy.init_node('ai', anonymous=False)
 
@@ -21,13 +16,17 @@ def main():
     is_player1 = rospy.get_param('~is_player1')
 
     # Create all soccer objects
-    me = soccerobjects.Robot(player1=is_player1)
-    ally = soccerobjects.Robot(player1=is_player1)
+    me = soccerobjects.Robot(player1=is_player1, home_team=is_team_home)
+    ally = soccerobjects.Robot(player1=is_player1, home_team=is_team_home)
     opp1 = soccerobjects.Robot()
     opp2 = soccerobjects.Robot()
     ball = soccerobjects.Ball()
+
+    def update(obj, msg):
+        obj.update(msg)
+
     # Subscribe to Robot and Ball positions
-    rospy.Subscriber('me',   Pose2D, lambda msg: update(me, msg))
+    rospy.Subscriber('me',   Pose2D, lambda msg: update(me,   msg))
     rospy.Subscriber('ally', Pose2D, lambda msg: update(ally, msg))
     rospy.Subscriber('ball', Pose2D, lambda msg: update(ball, msg))
     rospy.Subscriber('opp1', Pose2D, lambda msg: update(opp1, msg))
