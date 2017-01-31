@@ -2,9 +2,9 @@
 
 import rospy
 from geometry_msgs.msg import Pose2D
-from soccerref.msg import GameState
 
-import soccerobjects
+from soccerobjects import *
+from soccerref.msg import GameState as GameStateMsg
 import strategy
 
 
@@ -16,34 +16,34 @@ def main():
     is_player1 = rospy.get_param('~is_player1')
 
     # Create all soccer objects
-    me = soccerobjects.Robot(player1=is_player1, home_team=is_team_home)
-    ally = soccerobjects.Robot(player1=is_player1, home_team=is_team_home)
-    opp1 = soccerobjects.Robot()
-    opp2 = soccerobjects.Robot()
-    ball = soccerobjects.Ball()
-
-    def update(obj, msg):
-        obj.update(msg)
+    me   = Robot(is_player1=is_player1, is_home_team=is_team_home)
+    ally = Robot(is_player1=is_player1, is_home_team=is_team_home)
+    opp1 = Robot()
+    opp2 = Robot()
+    ball = Point2D()
+    game_state = GameState()
 
     # Subscribe to Robot and Ball positions
-    rospy.Subscriber('me',   Pose2D, lambda msg: update(me,   msg))
-    rospy.Subscriber('ally', Pose2D, lambda msg: update(ally, msg))
-    rospy.Subscriber('ball', Pose2D, lambda msg: update(ball, msg))
-    rospy.Subscriber('opp1', Pose2D, lambda msg: update(opp1, msg))
-    rospy.Subscriber('opp2', Pose2D, lambda msg: update(opp2, msg))
+    rospy.Subscriber('me',   Pose2D, me.update);
+    rospy.Subscriber('ally', Pose2D, ally.update)
+    rospy.Subscriber('ball', Pose2D, ball.update)
+    rospy.Subscriber('opp1', Pose2D, opp1.update)
+    rospy.Subscriber('opp2', Pose2D, opp2.update)
+    rospy.Subscriber('game', GameStateMsg, game_state.update)
 
-    # This message comes from the soccerref and
-    # tells us if we should be playing or not
-    # rospy.Subscriber('/game_state', GameState, _handle_game_state)
-
-    coach = strategy.Strategy()
+    coach = strategy.Strategy(game_state)
 
     rate = rospy.Rate(100) # 100 Hz
     while not rospy.is_shutdown():
-        coach.make_play(me, ally, ball)
+        if game_state.reset_field:
+            coach.return_to_start(me)
+        elif game_state.play:
+            try:
+                coach.make_play(me, ally, ball)
+            except SoccerResetException:
+                rospy.loginfo('Game Reset')
         rate.sleep()
 
 
 if __name__ == '__main__':
-    # If this file was run from the command line, then do the following:
     main()
