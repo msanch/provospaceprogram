@@ -7,6 +7,7 @@ from soccerobjects import Vector2D
 def get_point_behind_ball(ball):
 	dist_behind = .20
 	location_v = Vector2D.from_points(ball, const.OPP_GOAL)
+	location_v.x *= 1.1
 	location_v.set_length(dist_behind)
 	location_v.flip()
 	return ball.get_offset_point(location_v)
