@@ -35,13 +35,13 @@ def main():
 
     rate = rospy.Rate(100) # 100 Hz
     while not rospy.is_shutdown():
-        if game_state.reset_field:
-            coach.return_to_start(me)
-        elif game_state.play:
-            try:
-                coach.make_play(me, ally, ball)
-            except SoccerResetException:
-                rospy.loginfo('Game Reset')
+        try:
+            if game_state.reset_field:
+                coach.return_to_start(me)
+            elif game_state.play:
+                    coach.make_play(me, ally, ball)
+        except SoccerResetException:
+            rospy.loginfo('Game Reset')
         rate.sleep()
 
 

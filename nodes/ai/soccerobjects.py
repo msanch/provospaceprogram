@@ -71,7 +71,7 @@ class Robot:
 		self.theta = 0
 
 	def start_x(self):
-		return (-0.5 if self.player1 else -1.5)
+		return (-0.5 if self.is_player1 else -1.5)
 
 	def update(self, msg):
 		self.location.update(msg)
