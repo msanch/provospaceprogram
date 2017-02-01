@@ -21,8 +21,9 @@ class Strategy():
 			if robot_me.is_player1:
 				self.tactics.get_behind_ball(robot_me, ball)
 				self.tactics.run_to_goal(robot_me, ball)
+				# self.tactics.test_tactic(robot_me, ball)
 			else:
-				self.tactics.defend_on_ball_y(robot_me, ball)
+				self.tactics.defend_on_ball_y(robot_me, robot_ally, ball)
 		else:
 			rospy.logerr('UNKOWN PLAY')
 
