@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import rospy
-import cv2
 from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import Image
 import numpy as np
+import rospy
+import cv2
 
 yellowRange = [
 	# 63, 75, 235
@@ -27,6 +28,7 @@ class Vision:
     def __init__(self):
         self.bridge = CvBridge()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
+        self.pub = rospy.Publisher('MY_TOPIC_NAME', Pose2D, queue_size=10)
 
 
     def image_to_world_coordinates(self, x, y):
@@ -51,11 +53,9 @@ class Vision:
 
 
     def receive_frame(self, image):
-        self.cv_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
-        cv2.imshow('ImageWindow', self.cv_image)
-        cv2.waitKey(1)
+        cv_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
 
-        hsvImage = cv2.cvtColor(self.cv_image, cv2.COLOR_BGR2HSV)
+        hsvImage = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsvImage, yellowRange[0], yellowRange[1])
         cv2.imshow('MaskWindow', mask)
         cv2.waitKey(1)
@@ -76,14 +76,17 @@ class Vision:
 
         for mm in contour_moments:
         	x, y = [int(x) for x in self.get_center_of_mass(mm)]
-        	cv2.rectangle(self.cv_image, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
-        cv2.imshow('TrackWindow', self.cv_image)
+        	cv2.rectangle(cv_image, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
+        cv2.imshow('TrackWindow', cv_image)
         cv2.waitKey(1)
 
         mm_large = contour_moments[-1]
         mm_small = contour_moments[-2]
-        l_x, l_y = self.get_center_of_mass(mm_large)
-        s_x, s_y = self.get_center_of_mass(mm_small)
+        l_x, l_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_large))
+        s_x, s_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_small))
+        x, y = abs((l_x + s_x) / 2), abs((l_y + s_y) / 2)
+
+        self.pub.publish(Pose2D(x=x, y=y, theta=0))
 
 
 
