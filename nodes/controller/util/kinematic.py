@@ -1,6 +1,8 @@
 import numpy
 
-def get_rotation_matrix(theta):
+def get_rotation_matrix(theta, is_degrees=False):
+    if is_degrees:
+        theta = theta * numpy.pi / 180
     return [[numpy.cos(theta), numpy.sin(theta), 0], [-1 * numpy.sin(theta), numpy.cos(theta), 0],
         [0, 0, 1]]
 
