@@ -101,7 +101,8 @@ void getRobotPose(Mat& imgHsv, Scalar color[], geometry_msgs::Pose2D& robotPose)
     vector<Vec4i> hierarchy;
     findContours(imgGray, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
 
-    if (hierarchy.size() != 2)
+    if (len(hierarchy) != 2)
+        print 'too small', len(hierarchy)
         return;
 
     for(int i = 0; i < hierarchy.size(); i++)
