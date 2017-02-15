@@ -4,7 +4,7 @@ import math
 import sys
 
 import rospy
-from std_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D
 
 
 HOME = "home"
@@ -130,7 +130,10 @@ def main():
         print "     2 - go to center facing a goal"
         print "     3 - Do an x meter box facing a goal"
         sys.exit(-1)
+    # FIXME ROSPY : This is necessary because none of the called functions stay
+    # there until they're done, correct?
     rospy.spin()
 
 if __name__ == "__main__":
     main()
+
