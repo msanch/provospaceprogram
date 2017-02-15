@@ -91,7 +91,7 @@ class Vision:
         # this returns in radians
         angle = math.atan2(y, x)
         angle = math.degrees(angle)
-        print x, y, angle
+        #print x, y, angle
         self.pub.publish(Pose2D(x=x, y=y, theta=angle))
 
         # JOSH AND MICHAEL LOOK AT THIS MESSAGE ABOVE TO MOVE THE BOT
