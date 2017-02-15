@@ -29,7 +29,7 @@ class Vision:
     def __init__(self):
         self.bridge = CvBridge()
         rospy.Subscriber('/usb_cam_home/image_raw', Image, self.receive_frame)
-        self.pub = rospy.Publisher('psp1_current_state', Pose2D, queue_size=10)
+        self.pub = rospy.Publisher('psp_current_state', Pose2D, queue_size=10)
 
     def image_to_world_coordinates(self, x, y):
     	x -= self._CAMERA_WIDTH / 2
