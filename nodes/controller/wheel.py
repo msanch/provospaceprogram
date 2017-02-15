@@ -1,6 +1,6 @@
 
 def get_default_wheel():
-    
+    pass    
 
 def get_default_wheel_list():
     result = []

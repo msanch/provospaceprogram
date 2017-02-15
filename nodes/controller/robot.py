@@ -29,7 +29,7 @@ class Robot(object):
         self.velocity = velocity
         self.angular_velocity = angular_velocity # omega, w
         if len(wheels) != 3:
-            throw ValueError("Three wheels not initialzied")
+            raise ValueError("Three wheels not initialzied")
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
