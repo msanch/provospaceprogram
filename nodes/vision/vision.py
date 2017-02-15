@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 import numpy as np
 import rospy
 import cv2
+import math
 
 yellowRange = [
 	# 63, 75, 235
@@ -27,9 +28,9 @@ class Vision:
 
     def __init__(self):
         self.bridge = CvBridge()
-        rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
+        rospy.Subscriber('/usb_cam_home/image_raw', Image, self.receive_frame)
         self.pub = rospy.Publisher('MY_TOPIC_NAME', Pose2D, queue_size=10)
-
+        # JOSH AND MICHAEL CHANGE THE NAME OF THE TOPIC NAME ABOVE
 
     def image_to_world_coordinates(self, x, y):
     	x -= self._CAMERA_WIDTH / 2
@@ -86,8 +87,14 @@ class Vision:
         s_x, s_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_small))
         x, y = abs((l_x + s_x) / 2), abs((l_y + s_y) / 2)
 
-        self.pub.publish(Pose2D(x=x, y=y, theta=0))
 
+        # this returns in radians
+        angle = math.atan2(y, x)
+        angle = math.degrees(angle)
+        print x, y, angle
+        self.pub.publish(Pose2D(x=x, y=y, theta=angle))
+
+        # JOSH AND MICHAEL LOOK AT THIS MESSAGE ABOVE TO MOVE THE BOT
 
 
 
