@@ -10,7 +10,7 @@ import math
 
 yellowRange = [
 	# 63, 75, 235
-	np.array([10, 40, 40]),
+	np.array([30, 40, 40]),
 	np.array([50, 255, 255])
 ]
 
@@ -28,7 +28,7 @@ class Vision:
 
     def __init__(self):
         self.bridge = CvBridge()
-        rospy.Subscriber('/usb_cam_home/image_raw', Image, self.receive_frame)
+        rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         self.pub = rospy.Publisher('psp_current_state', Pose2D, queue_size=10)
 
     def image_to_world_coordinates(self, x, y):
@@ -65,11 +65,12 @@ class Vision:
         contour_moments = []
         for contour in contours:
         	mm = cv2.moments(contour)
-        	if mm['m00'] > 100:
+        	if mm['m00'] > 50:
         		contour_moments.append(mm)
 
         if len(contour_moments) < 2:
-        	return
+            print 'len', len(contour_moments)
+            return
 
         contour_moments.sort(key=lambda m: m['m00'])
         contour_moments = contour_moments[-2:]
@@ -84,12 +85,12 @@ class Vision:
         mm_small = contour_moments[-2]
         l_x, l_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_large))
         s_x, s_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_small))
-        x, y = abs((l_x + s_x) / 2), abs((l_y + s_y) / 2)
+        x, y = (l_x + s_x) / 2, (l_y + s_y) / 2
 
 
         # this returns in radians
         # Joshua: I want radians
-        angle = math.atan2(y, x)
+        angle = math.atan2(s_y - l_y, s_x - l_x)
         print x, y, angle
         self.pub.publish(Pose2D(x=x, y=y, theta=angle))
 

@@ -108,14 +108,14 @@ class PathPlanner():
 def main():
     print "Begin Path Planner"
     # FIXME ROSPY : Make sure this topic name is correct
-    rospy.init("psp_path_planner", anonymous=False)
+    rospy.init_node("psp_path_planner", anonymous=False)
     path_planner = PathPlanner()
     # FIXME ROSPY : Make sure this is the right command line argument when using
     # the rospy scripts to run
     COMMANDLINE_ARGUMENT = 1
     command_number = sys.argv[COMMANDLINE_ARGUMENT]
     if command_number == "1":
-        path_planner.spin(int(sys.argv[COMMANDLINE_ARGUMENT + 1]):
+        path_planner.spin(int(sys.argv[COMMANDLINE_ARGUMENT + 1]))
     elif command_number == "2":
         path_planner.center_up(sys.argv[COMMANDLINE_ARGUMENT + 1])
     elif command_runner == "3":
