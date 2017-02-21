@@ -29,8 +29,7 @@ class Vision:
     def __init__(self):
         self.bridge = CvBridge()
         rospy.Subscriber('/usb_cam_home/image_raw', Image, self.receive_frame)
-        self.pub = rospy.Publisher('MY_TOPIC_NAME', Pose2D, queue_size=10)
-        # JOSH AND MICHAEL CHANGE THE NAME OF THE TOPIC NAME ABOVE
+        self.pub = rospy.Publisher('psp_current_state', Pose2D, queue_size=10)
 
     def image_to_world_coordinates(self, x, y):
     	x -= self._CAMERA_WIDTH / 2
@@ -89,13 +88,10 @@ class Vision:
 
 
         # this returns in radians
+        # Joshua: I want radians
         angle = math.atan2(y, x)
-        angle = math.degrees(angle)
         print x, y, angle
         self.pub.publish(Pose2D(x=x, y=y, theta=angle))
-
-        # JOSH AND MICHAEL LOOK AT THIS MESSAGE ABOVE TO MOVE THE BOT
-
 
 
 
