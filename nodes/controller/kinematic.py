@@ -25,28 +25,51 @@ WHEEL_DISTANCE_FROM_CENTER = 0.073
 # hard-coded constant
 def _get_center_of_robot_to_wheel_vectors():
     result = [
-        (-WHEEL_DISTANCE_FROM_CENTER, 0, 0)
-        (WHEEL_DISTANCE_FROM_CENTER * 0.86602540378443871, # numpy.cos(-30*numpy.pi/180)
-            WHEEL_DISTANCE_FROM_CENTER * -0.49999999999999994, 0), # numpy.sin(-30*numpy.pi/180)
-        (WHEEL_DISTANCE_FROM_CENTER * 0.86602540378443871, # numpy.cos(-30*numpy.pi/180)
-            WHEEL_DISTANCE_FROM_CENTER * -0.49999999999999994, 0)  # numpy.cos(30*numpy.pi/180)
+        (-WHEEL_DISTANCE_FROM_CENTER, 0, 0),
+        (WHEEL_DISTANCE_FROM_CENTER  * numpy.cos(-60*2*numpy.pi/360),
+            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(-60*2*numpy.pi/360), 0),
+        (WHEEL_DISTANCE_FROM_CENTER * numpy.cos(60*2*numpy.pi/360),
+            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(60*2*numpy.pi/360), 0)
     ]
     return numpy.matrix(result)
 
-# FIXME MICHAEL : I need the radius of the wheels in meters
-RADIUS_OF_WHEELS = 0.004
+def _create_speed_matrix(theta):
+    """
+    [
+        [x,y]
+        [x,y]
+        [x,y]
+    ]
+    """
+    result = [
+        [numpy.cos( 90*numpy.pi*/180 + theta), numpy.sin( 90*numpy.pi*/180 + theta)]
+        [numpy.cos(210*numpy.pi*/180 + theta), numpy.sin(210*numpy.pi*/180 + theta)]
+        [numpy.cos(-30*numpy.pi*/180 + theta), numpy.sin(-30*numpy.pi*/180 + theta)]
+    ]
+    return result
+
+RADIUS_OF_WHEELS = 0.030
 RHO = RADIUS_OF_WHEELS
-def get_wheel_spin_vector(theta, wheel_spin):
+def get_wheel_spin_vector(theta):
     """
     theta : robot body
-    wheel_spin_direction : [-x,0,y] - 3 elements for each 
+    wheel_spin_direction : [-2.3,0,1.5] - 3 elements for each 
                            wheel. Rotation/sec
     return wheel_spin_direction : [(x,y,0), (x,y,0), (x,y,0)]
     where x,y are functions of the robot theta and wheel direction
     """
-    _get_center_of_robot_to_wheel_vectors()    
+    r = _get_center_of_robot_to_wheel_vectors()
+    s = _create_speed_matrix(theta)
+    wheel_list_matrix = [
+        (s[0][0], s[0][1], s[0][1] * r[0].T[0] - (s[0][0] * r[0].T[1])),
+        (s[1][0], s[1][1], s[1][1] * r[1].T[0] - (s[1][0] * r[1].T[1])),
+        (s[2][0], s[2][1], s[2][1] * r[2].T[0] - (s[2][0] * r[2].T[1]))
+    ]
+    wheel_matrix = numpy.Matrix(wheel_list_matrix)
+    return wheel_matrix
 
-def _get_m(theta, wheel_speed_list):
+
+def _get_M(theta):
     """
     given: 
         RHO - Wheel size - CONSTANT - Float?
@@ -54,10 +77,8 @@ def _get_m(theta, wheel_speed_list):
     theta : robot degree turned
     wheel_speed_list : list of wheel speeds in rotations/sec
     """
-    # FIXME BEN and MARTIN : Start here
-    s = get_wheel_spin_vectors(theta, wheel_speed_list)
-    harry_matrix = None
-    result = (1 / RHO) * harry_matrix
+    s = get_wheel_spin_vector(theta)
+    result = (1 / RHO) * s
     return result
 
 def _convert_radians_to_rotations_per_second(omega_list):
@@ -77,15 +98,13 @@ def _vector_matrix_to_list(matrix):
     """
     return matrix.T.tolist()[0]
 
-def get_wheel_speeds(wheel_speed_list, theta, desired_velocities):
+def get_desired_wheel_speeds(theta, desired_velocities):
     """
-    wheel_speed_list : [a,b,c] where a,b,c are 
-                       floats representing rot/sec
     theta : of robot
     desired_velocities : (vx,vy,omega)
     return : [omega, omega, omega] : rotations / second
     """
-    m = _get_m(theta, wheel_speed_list)
+    m = _get_M(theta)
     r = _get_rotation_matrix(theta)
     desired_velocities_matrix = numpy.matrix(desired_velocities).T
     matrix_result = m * r * desired_velocities_matrix

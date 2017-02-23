@@ -74,8 +74,7 @@ class Robot(object):
         delta_y = self.current_position[1] - self.desired_position[1]
         delta_theta = self.current_theta - self.desired_theta
         velocity_list = _get_velocities(delta_x, delta_y, delta_theta)
-        wheel_speed_list = self._get_wheel_speed_list()
-        desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(wheel_speed_list)
+        desired_wheel_velocity_list = kinematic.get_wheel_speeds(self.theta, velocity_list)
         for i in range(3):
             self.wheels[i].set_motor_speed(desired_wheel_velocity_list[i])
         wheel.spin()
