@@ -16,10 +16,10 @@ def _rotation(w1, rotation_matrix):
 #
 #             Back
 #              |
-#              |  3
+#              |  1
 #              |
 #             / \
-#          2 /   \ 1
+#          2 /   \ 3
 #           /     \
 # Front(b/c a kicker could go here)
 WHEEL_DISTANCE_FROM_CENTER = 0.0381
@@ -56,10 +56,11 @@ def _get_m(theta, wheel_speed_list):
     theta : robot degree turned
     wheel_speed_list : list of wheel speeds in rotations/sec
     """
+    # FIXME BEN and MARTIN : Start here
     s = get_wheel_spin_vectors(theta, wheel_speed_list)
-    harry_matrix = 
+    harry_matrix = None
     result = (1 / RHO) * harry_matrix
-    return
+    return result
 
 def _convert_radians_to_rotations_per_second(omega_list):
     """
