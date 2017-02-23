@@ -75,10 +75,11 @@ class Robot(object):
         delta_theta = self.current_theta - self.desired_theta
         velocity_list = _get_velocities(delta_x, delta_y, delta_theta)
         wheel_speed_list = self._get_wheel_speed_list()
-        wheel_velocity_list = kinematic.get_wheel_speeds()
+        desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(wheel_speed_list)
         for i in range(3):
-            self.wheels[i].spin(wheel_velocity_list[i])
-    
+            self.wheels[i].set_motor_speed(desired_wheel_velocity_list[i])
+        wheel.spin()
+ 
 def main():
     print "Starting Robot Controller Node"
     # FIXME ROSPY : Valid name here?

@@ -11,27 +11,25 @@ def _get_rotation_matrix(theta):
 def _rotation(w1, rotation_matrix):
     return rotation_matrix * w1
 
-# FIXME MICHAEL : I need the radius of each wheel from the center of the body
-# in meters
 #
 #             Back
 #              |
-#              |  1
-#              |
+#              |  1            --y
+#              |              | x
 #             / \
 #          2 /   \ 3
 #           /     \
 # Front(b/c a kicker could go here)
-WHEEL_DISTANCE_FROM_CENTER = 0.0381
+WHEEL_DISTANCE_FROM_CENTER = 0.073
 # TODO Keep this function, but use it to generate a constant, then use that
 # hard-coded constant
 def _get_center_of_robot_to_wheel_vectors():
     result = [
+        (-WHEEL_DISTANCE_FROM_CENTER, 0, 0)
         (WHEEL_DISTANCE_FROM_CENTER * 0.86602540378443871, # numpy.cos(-30*numpy.pi/180)
             WHEEL_DISTANCE_FROM_CENTER * -0.49999999999999994, 0), # numpy.sin(-30*numpy.pi/180)
-        (WHEEL_DISTANCE_FROM_CENTER * -0.49999999999999978, # numpy.cos(-120*numpy.pi/180) 
-            WHEEL_DISTANCE_FROM_CENTER * -0.86602540378443871, 0), # numpy.cos(-120*numpy.pi/180)
-        (0, WHEEL_DISTANCE_FROM_CENTER, 0)
+        (WHEEL_DISTANCE_FROM_CENTER * 0.86602540378443871, # numpy.cos(-30*numpy.pi/180)
+            WHEEL_DISTANCE_FROM_CENTER * -0.49999999999999994, 0)  # numpy.cos(30*numpy.pi/180)
     ]
     return numpy.matrix(result)
 

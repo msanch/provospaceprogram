@@ -1,23 +1,35 @@
-def get_default_wheel():
-    pass    
+import psoc
+import numpy
+
+
+def get_default_wheel(wheel_num):
+    return Wheel(wheel_num)
 
 def get_default_wheel_list():
     result = []
     for i in range(3):
-        result.append(get_default_wheel())
+        result.append(get_default_wheel(i))
     return result
 
+def spin():
+    psoc.spin()
 
 class Wheel(object):
-    def __init__(self, vector_from_robot_center, linear_velocity, wheel_spin=0):
-        pass
+    def __init__(self, wheel_num):
+        self.wheel_num = wheel_num
+        self.vector_from_robot_center = vector_from_robot_center
+        # self.linear_velocity = linear_velocity
+        # self.wheel_spin = wheel_spin = 0
+        psoc.setPID(self.wheel_num, 1, 1, 800) # 30,000, 80,000
 
     def get_speed(self):
         """
-    
+        return : rotations /sec
         """
-        pass
+        psoc.get_speed(self.wheel_num)
 
-    def spin(self, wheel_velocity):
-        pass
+    def set_motor_speed(self, speed):
+        """
+        """
+        psoc.set_motor_speed(self.wheel_num, speed)
 
