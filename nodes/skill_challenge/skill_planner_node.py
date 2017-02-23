@@ -16,7 +16,7 @@ class PathPlanner():
         # FIXME ROSPY : topics named right?
         rospy.Subscriber("psp_current_state", Pose2D, self._handle_current_state)
         # FIXME ROSPY : Am I good with the queue size?
-        self.path_publisher = rospy.Publisher('psp_desired_state', Pose2D, queue_size=10)
+        self.path_publisher = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
         self.current_x = 0.0
         self.current_y = 0.0
         self.current_theta = 0.0

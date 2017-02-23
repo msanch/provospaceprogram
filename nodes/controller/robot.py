@@ -37,7 +37,7 @@ class Robot(object):
         self.desired_theta = theta
         rospy.Subscriber("psp_current_state", Pose2D,
                          self._handle_current_state)
-        rospy.Subscriber("psp_desired_state", Pose2D,
+        rospy.Subscriber("psp_desired_skills_state", Pose2D,
                          self._handle_desired_state)
 
     def _handle_current_state(msg):
