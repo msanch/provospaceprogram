@@ -32,9 +32,9 @@ class PathPlanner():
         msg = Pose2D(x=self.current_x,
                      y=self.current_y,
                      theta=end_theta)
+        print "Publishing"
         self.path_publisher.publish(msg)
-        # FIXME ROSPY : do I need to wait for anything or can I return?
-        # I imagine rospy.spin() in main means I don't
+        print "Published"
 
     # FIXME ANYONE FINE TUNING : Declare a reasonable tolerance for image being
     # off
@@ -108,7 +108,7 @@ class PathPlanner():
 def main():
     print "Begin Path Planner"
     # FIXME ROSPY : Make sure this topic name is correct
-    rospy.init_node("psp_path_planner", anonymous=False)
+    rospy.init_node("psp_skill_planner", anonymous=False)
     path_planner = PathPlanner()
     # FIXME ROSPY : Make sure this is the right command line argument when using
     # the rospy scripts to run

@@ -17,7 +17,6 @@ def spin():
 class Wheel(object):
     def __init__(self, wheel_num):
         self.wheel_num = wheel_num
-        self.vector_from_robot_center = vector_from_robot_center
         # self.linear_velocity = linear_velocity
         # self.wheel_spin = wheel_spin = 0
         psoc.setPID(self.wheel_num, 1, 1, 800) # 30,000, 80,000

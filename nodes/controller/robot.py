@@ -9,7 +9,7 @@ import kinematic
 import wheel
 
 
-def __calculate_optimum_velocity(d_x, limit):
+def _calculate_optimum_velocity(d_x, limit):
     result = d_x
     if d_x > 0 and d_x > limit:
         result = limit
@@ -20,31 +20,33 @@ def __calculate_optimum_velocity(d_x, limit):
             result = neg_limit
     return result
 
+
 class Robot(object):
     def __init__(self, velocity=(0, 0), angular_velocity=0,
-    wheels=wheel.get_defualt_wheel_list(), position=(0,0), theta=0):
+                 wheels=wheel.get_default_wheel_list(), position=(0, 0), theta=0):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
         self.velocity = velocity
-        self.angular_velocity = angular_velocity # omega, w
+        self.angular_velocity = angular_velocity  # omega, w
         if len(wheels) != 3:
             raise ValueError("Three wheels not initialzied")
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
         self.desired_position = position
-        self.desired_theta = theta
+        self.desired_theta = 4
         rospy.Subscriber("psp_current_state", Pose2D,
                          self._handle_current_state)
         rospy.Subscriber("psp_desired_skills_state", Pose2D,
                          self._handle_desired_state)
 
-    def _handle_current_state(msg):
+    def _handle_current_state(self, msg):
         self.current_position = (msg.x, msg.y)
         self.current_theta = msg.theta
 
-    def _handle_desired_state(msg):
+    def _handle_desired_state(self, msg):
+        print "Handling desired"
         self.desired_position = (msg.x, msg.y)
         self.desired_theta = msg.theta
 
@@ -54,12 +56,12 @@ class Robot(object):
 
     def _get_velocities(self, d_x, d_y, d_t):
         result = []
-        result.append(__calculate_optimum_velocity(d_x,
-                      self.OPTIMAL_ROBOT_SPEED))
-        result.append(__calculate_optimum_velocity(d_y,
-                      self.OPTIMAL_ROBOT_SPEED))
-        result.append(__calculate_optimum_velocity(d_t,
-                      self.OPTIMAL_ROBOT_ANGULAR_SPEED))
+        result.append(_calculate_optimum_velocity(d_x,
+                                                  self.OPTIMAL_ROBOT_SPEED))
+        result.append(_calculate_optimum_velocity(d_y,
+                                                  self.OPTIMAL_ROBOT_SPEED))
+        result.append(_calculate_optimum_velocity(d_t,
+                                                  self.OPTIMAL_ROBOT_ANGULAR_SPEED))
         return result
 
     def _get_wheel_speed_list(self):
@@ -70,24 +72,28 @@ class Robot(object):
         return result
 
     def run(self):
+        print "running"
         delta_x = self.current_position[0] - self.desired_position[0]
         delta_y = self.current_position[1] - self.desired_position[1]
         delta_theta = self.current_theta - self.desired_theta
-        velocity_list = _get_velocities(delta_x, delta_y, delta_theta)
-        desired_wheel_velocity_list = kinematic.get_wheel_speeds(self.theta, velocity_list)
+        print delta_x, delta_y, delta_theta
+        velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
+        print velocity_list
+        desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.desired_theta, velocity_list)
         for i in range(3):
             self.wheels[i].set_motor_speed(desired_wheel_velocity_list[i])
-        wheel.spin()
- 
+        print "done"
+
 def main():
     print "Starting Robot Controller Node"
     # FIXME ROSPY : Valid name here?
     rospy.init_node("psp_controller", anonymous=False)
     robot = Robot()
-    rate = rospy.Rate(100) # 100 Hz
+    rate = rospy.Rate(100)  # 100 Hz
     while not rospy.is_shutdown():
         robot.run()
         rate.sleep()
+
 
 if __name__ == "__main__":
     main()

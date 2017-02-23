@@ -1,12 +1,14 @@
 import numpy
 
+
 def _get_rotation_matrix(theta):
     matrix = [
-        [numpy.cos(theta), numpy.sin(theta), 0], 
+        [numpy.cos(theta), numpy.sin(theta), 0],
         [-1 * numpy.sin(theta), numpy.cos(theta), 0],
         [0, 0, 1]
     ]
     return numpy.matrix(matrix)
+
 
 def _rotation(w1, rotation_matrix):
     return rotation_matrix * w1
@@ -23,6 +25,8 @@ def _rotation(w1, rotation_matrix):
 WHEEL_DISTANCE_FROM_CENTER = 0.073
 # TODO Keep this function, but use it to generate a constant, then use that
 # hard-coded constant
+
+
 def _get_center_of_robot_to_wheel_vectors():
     result = [
         (-WHEEL_DISTANCE_FROM_CENTER, 0, 0),
@@ -33,6 +37,7 @@ def _get_center_of_robot_to_wheel_vectors():
     ]
     return numpy.matrix(result)
 
+
 def _create_speed_matrix(theta):
     """
     [
@@ -42,18 +47,20 @@ def _create_speed_matrix(theta):
     ]
     """
     result = [
-        [numpy.cos( 90*numpy.pi*/180 + theta), numpy.sin( 90*numpy.pi*/180 + theta)]
-        [numpy.cos(210*numpy.pi*/180 + theta), numpy.sin(210*numpy.pi*/180 + theta)]
-        [numpy.cos(-30*numpy.pi*/180 + theta), numpy.sin(-30*numpy.pi*/180 + theta)]
+        [numpy.cos( 90*numpy.pi/180 + theta), numpy.sin( 90*numpy.pi/180 + theta)],
+        [numpy.cos(210*numpy.pi/180 + theta), numpy.sin(210*numpy.pi/180 + theta)],
+        [numpy.cos(-30*numpy.pi/180 + theta), numpy.sin(-30*numpy.pi/180 + theta)]
     ]
     return result
 
 RADIUS_OF_WHEELS = 0.030
 RHO = RADIUS_OF_WHEELS
+
+
 def get_wheel_spin_vector(theta):
     """
     theta : robot body
-    wheel_spin_direction : [-2.3,0,1.5] - 3 elements for each 
+    wheel_spin_direction : [-2.3,0,1.5] - 3 elements for each
                            wheel. Rotation/sec
     return wheel_spin_direction : [(x,y,0), (x,y,0), (x,y,0)]
     where x,y are functions of the robot theta and wheel direction
@@ -65,15 +72,15 @@ def get_wheel_spin_vector(theta):
         (s[1][0], s[1][1], s[1][1] * r[1].T[0] - (s[1][0] * r[1].T[1])),
         (s[2][0], s[2][1], s[2][1] * r[2].T[0] - (s[2][0] * r[2].T[1]))
     ]
-    wheel_matrix = numpy.Matrix(wheel_list_matrix)
+    wheel_matrix = numpy.matrix(wheel_list_matrix)
     return wheel_matrix
 
 
 def _get_M(theta):
     """
-    given: 
+    given:
         RHO - Wheel size - CONSTANT - Float?
-        R_VECTOR - Location of wheels on body - matrix 
+        R_VECTOR - Location of wheels on body - matrix
     theta : robot degree turned
     wheel_speed_list : list of wheel speeds in rotations/sec
     """
@@ -119,17 +126,17 @@ def get_desired_wheel_speeds(theta, desired_velocities):
 #     """
 #     r = _get_rotation_matrix(theta)
 #     r_t = r.T
-#     m_inv = 
+#     m_inv =
 #     angular_velocity_rotations_per_second_vector
 #     result_vector = r_t * m_inv * angular_velocity_rotations_per_second_vector
 #     return result_vector.T.tolist()[0]
 
 def main():
-    get_world_velocity()
-    w1 = numpy.matrix("1;2;3")
-    print rotation(w1, get_rotation_matrix(numpy.pi))
-    help(rotation(w1, get_rotation_matrix(numpy.pi)))
+    pass
+    # get_world_velocity()
+    # w1 = numpy.matrix("1;2;3")
+    # print rotation(w1, get_rotation_matrix(numpy.pi))
+    # help(rotation(w1, get_rotation_matrix(numpy.pi)))
 
 if __name__ == "__main__":
     main()
-

@@ -6,20 +6,6 @@ ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None)
 SAMPLE_RATE = 50 #samples per second
 PULSES_PER_ROTATION = 4955 #Old motors
 
-setT(20, 50)
-
-setSpeed(speedM1*pulsePerRotation, speedM2*pulsePerRotation, speedM3*pulsePerRotation)
-
-for i in range(0,totalTime * sampleRate):
-    print("loop")
-    time.sleep(1.0/sampleRate)
-    times.append(i*1.0/sampleRate)
-    speed = getSpeed()
-    speedsM1.append(speed[0]/pulsePerRotation)
-    speedsM2.append(speed[1]/pulsePerRotation)
-    speedsM3.append(speed[2]/pulsePerRotation)
-disengage()
-
 motor_1_speed = 0
 motor_2_speed = 0
 motor_3_speed = 0
@@ -86,3 +72,4 @@ def getEncoderCount():
 def disengage():
     ser.write('d')
 
+setT(20, 50)
