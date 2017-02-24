@@ -57,7 +57,7 @@ def getSpeed(wheel_num=0):
     return : list with either all three values in it or the desired value
     """
     ser.write('v')
-    wheel = [None, None, None]
+    wheel = [None, None, None, None]
     wheel[1] = [readFloat()]
     wheel[2] = [readFloat()]
     wheel[3] = [readFloat()]
@@ -72,4 +72,6 @@ def getEncoderCount():
 def disengage():
     ser.write('d')
 
+print 'init psoc'
+setPID(0,1,1,800)
 setT(20, 50)

@@ -98,7 +98,7 @@ class Vision:
 
 def main():
     print 'Begin'
-    rospy.init_node('vision', anonymous=False)
+    rospy.init_node('psp_vision', anonymous=False)
     vision = Vision()
     rospy.spin()
 

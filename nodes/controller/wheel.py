@@ -30,5 +30,8 @@ class Wheel(object):
     def set_motor_speed(self, speed):
         """
         """
+        print "inside set_motor_speed"
+        print "wheel number", self.wheel_num, speed
         psoc.set_motor_speed(self.wheel_num, speed)
+        psoc.spin()
 

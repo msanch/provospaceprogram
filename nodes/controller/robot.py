@@ -35,7 +35,7 @@ class Robot(object):
         self.current_position = position
         self.current_theta = theta
         self.desired_position = position
-        self.desired_theta = 4
+        self.desired_theta = theta
         rospy.Subscriber("psp_current_state", Pose2D,
                          self._handle_current_state)
         rospy.Subscriber("psp_desired_skills_state", Pose2D,
@@ -70,6 +70,7 @@ class Robot(object):
             speed = wheel_.get_speed()
             result.append(speed)
         return result
+
 
     def run(self):
         print "running"
