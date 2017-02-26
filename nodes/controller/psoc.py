@@ -6,17 +6,6 @@ ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None)
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
 
-motor_1_speed = 0
-motor_2_speed = 0
-motor_3_speed = 0
-
-
-def spin():
-    ser.write('s')
-    writeFloat(motor_1_speed)
-    writeFloat(motor_2_speed)
-    writeFloat(motor_3_speed)
-
 
 def writeFloat(f):
     ser.write(struct.pack('>i', int(f*1000)))
@@ -34,12 +23,10 @@ def setPower(p1, p2, p3):
 
 
 def set_motor_speeds(speeds):
-    global motor_1_speed
-    global motor_2_speed
-    global motor_3_speed
-    motor_1_speed = speeds[0]
-    motor_2_speed = speeds[1]
-    motor_3_speed = speeds[2]
+    ser.write('s')
+    writeFloat(speeds[0])
+    writeFloat(speeds[1])
+    writeFloat(speeds[2])
 
 
 def setPID(motor, p, i, qpps):  # use motor = 0 to set all motors
