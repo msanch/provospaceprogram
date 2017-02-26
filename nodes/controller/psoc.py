@@ -72,6 +72,5 @@ def getEncoderCount():
 def disengage():
     ser.write('d')
 
-print 'init psoc'
-setPID(0,1,1,800)
 setT(20, 50)
+

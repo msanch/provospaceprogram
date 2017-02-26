@@ -34,7 +34,7 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = position
+        self.desired_position = (0.1, 0) 
         self.desired_theta = theta
         rospy.Subscriber("psp_current_state", Pose2D,
                          self._handle_current_state)
@@ -81,8 +81,7 @@ class Robot(object):
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         print velocity_list
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.desired_theta, velocity_list)
-        for i in range(3):
-            self.wheels[i].set_motor_speed(desired_wheel_velocity_list[i])
+        wheel.set_motor_speed(desired_wheel_velocity_list)
         print "done"
 
 def main():
