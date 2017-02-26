@@ -1,5 +1,8 @@
 import struct
 import serial
+import sys
+import time
+
 
 ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None)
 
@@ -22,11 +25,25 @@ def setPower(p1, p2, p3):
     writeFloat(p3)
 
 
+def set_pids(speeds):
+    qpps_1 = abs(speeds[0]*4500)
+    qpps_2 = abs(speeds[1]*4500)
+    qpps_3 = abs(speeds[2]*4500)
+    setPID(1, 1, 2.0, qpps_1)
+    setPID(2, 1, 2.0, qpps_2)
+    setPID(3, 1, 2.0, qpps_3)
+
+
+def setSpeed(s1, s2, s3):
+	ser.write('s')
+	writeFloat(s1)
+	writeFloat(s2)
+	writeFloat(s3)
+
+
 def set_motor_speeds(speeds):
-    ser.write('s')
-    writeFloat(speeds[0])
-    writeFloat(speeds[1])
-    writeFloat(speeds[2])
+    set_pids(speeds)
+    setSpeed(speeds[0]*PULSES_PER_ROTATION, speeds[1]*PULSES_PER_ROTATION, speeds[2]*PULSES_PER_ROTATION)
 
 
 def setPID(motor, p, i, qpps):  # use motor = 0 to set all motors

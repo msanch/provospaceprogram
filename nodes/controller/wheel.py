@@ -12,9 +12,11 @@ def get_default_wheel_list():
         result.append(get_default_wheel(i))
     return result
 
-
 def set_motor_speed(speed_list):
     psoc.set_motor_speeds(speed_list)
+
+def power_off():
+    psoc.disengage()
 
 
 class Wheel(object):
@@ -22,7 +24,7 @@ class Wheel(object):
         self.wheel_num = wheel_num
         # self.linear_velocity = linear_velocity
         # self.wheel_spin = wheel_spin = 0
-        psoc.setPID(self.wheel_num, 1, 1, 9000)  # 9000
+        # psoc.setPID(self.wheel_num, 1, 1, 9000)  # 9000
 
     def get_speed(self):
         """
