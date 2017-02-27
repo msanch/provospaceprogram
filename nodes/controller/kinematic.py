@@ -47,9 +47,9 @@ def _create_speed_matrix(theta):
     ]
     """
     result = [
-        [numpy.cos( 90*numpy.pi/180 + theta), numpy.sin( 90*numpy.pi/180 + theta)],
-        [numpy.cos(210*numpy.pi/180 + theta), numpy.sin(210*numpy.pi/180 + theta)],
-        [numpy.cos(-30*numpy.pi/180 + theta), numpy.sin(-30*numpy.pi/180 + theta)]
+        [numpy.cos(270*numpy.pi/180 + theta), numpy.sin(270*numpy.pi/180 + theta)],
+        [numpy.cos( 30*numpy.pi/180 + theta), numpy.sin( 30*numpy.pi/180 + theta)],
+        [numpy.cos(150*numpy.pi/180 + theta), numpy.sin(150*numpy.pi/180 + theta)]
     ]
     return result
 

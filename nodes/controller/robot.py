@@ -37,7 +37,7 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = (10.0, 0) 
+        self.desired_position = (0.0, 10.0) 
         self.desired_theta = 0 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
@@ -85,6 +85,7 @@ class Robot(object):
         # print delta_x, delta_y, delta_theta
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.desired_theta, velocity_list)
+        print desired_wheel_velocity_list
         wheel.set_motor_speed(desired_wheel_velocity_list)
 
 def main():
@@ -95,8 +96,8 @@ def main():
     robot = Robot()
     rate = 1/100 if debug else rospy.Rate(100)  # 100 Hz
     try:
-        # condition = None if debug else rospy.is_shutdown()
-        while not rospy.is_shutdown():
+        def condition(): return None if debug else rospy.is_shutdown()
+        while not condition():
             robot.run()
             if debug:
                 time.sleep(rate)
