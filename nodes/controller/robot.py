@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = True
+debug = False # True
 import math
 if debug:
     import time
@@ -37,24 +37,25 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = (0.0, 0) 
-        self.desired_theta = 3.14159
+        self.desired_position = (10.0, 0) 
+        self.desired_theta = 0 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            rospy.Subscriber("psp_current_state", Pose2D,
-                             self._handle_current_state)
             rospy.Subscriber("psp_desired_skills_state", Pose2D,
                              self._handle_desired_state)
-
-    def _handle_current_state(self, msg):
-        self.current_position = (msg.x, msg.y)
-        self.current_theta = msg.theta
+            rospy.Subscriber("psp_current_state", Pose2D,
+                             self._handle_current_state)
 
     def _handle_desired_state(self, msg):
         print "Handling desired"
         self.desired_position = (msg.x, msg.y)
         self.desired_theta = msg.theta
 
+    def _handle_current_state(self, msg):
+        self.current_position = (msg.x, msg.y)
+        self.current_theta = msg.theta
+
+ 
     # FIXME FINE TUNING : Set these optimal speeds
     OPTIMAL_ROBOT_SPEED = 2.0
     OPTIMAL_ROBOT_ANGULAR_SPEED = math.pi
@@ -78,7 +79,6 @@ class Robot(object):
 
 
     def run(self):
-        print "running"
         delta_x = self.current_position[0] - self.desired_position[0]
         delta_y = self.current_position[1] - self.desired_position[1]
         delta_theta = self.current_theta - self.desired_theta
@@ -95,8 +95,8 @@ def main():
     robot = Robot()
     rate = 1/100 if debug else rospy.Rate(100)  # 100 Hz
     try:
-        condition = None if debug else rospy.Rate(100)
-        while not condition:
+        # condition = None if debug else rospy.is_shutdown()
+        while not rospy.is_shutdown():
             robot.run()
             if debug:
                 time.sleep(rate)
