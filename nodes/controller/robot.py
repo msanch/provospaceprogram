@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-
+debug = True
 import math
-
-import rospy
-from geometry_msgs.msg import Pose2D
+if debug:
+    import time
+else:
+    import rospy
+    from geometry_msgs.msg import Pose2D
 
 import kinematic
 import wheel
@@ -23,7 +25,8 @@ def _calculate_optimum_velocity(d_x, limit):
 
 class Robot(object):
     def __init__(self, velocity=(0, 0), angular_velocity=0,
-                 wheels=wheel.get_default_wheel_list(), position=(0, 0), theta=0):
+                 wheels=wheel.get_default_wheel_list(), position=(0, 0),
+                 theta=0):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
@@ -34,12 +37,14 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = (1.0, 0) 
-        self.desired_theta = 0  # 3.14159
-        rospy.Subscriber("psp_current_state", Pose2D,
-                         self._handle_current_state)
-        rospy.Subscriber("psp_desired_skills_state", Pose2D,
-                         self._handle_desired_state)
+        self.desired_position = (0.0, 0) 
+        self.desired_theta = 3.14159
+        self.wheels[0].set_debug(debug)
+        if not debug:
+            rospy.Subscriber("psp_current_state", Pose2D,
+                             self._handle_current_state)
+            rospy.Subscriber("psp_desired_skills_state", Pose2D,
+                             self._handle_desired_state)
 
     def _handle_current_state(self, msg):
         self.current_position = (msg.x, msg.y)
@@ -85,13 +90,18 @@ class Robot(object):
 def main():
     print "Starting Robot Controller Node"
     # FIXME ROSPY : Valid name here?
-    rospy.init_node("psp_controller", anonymous=False)
+    if not debug:
+        rospy.init_node("psp_controller", anonymous=False)
     robot = Robot()
-    rate = rospy.Rate(100)  # 100 Hz
+    rate = 1/100 if debug else rospy.Rate(100)  # 100 Hz
     try:
-     while not rospy.is_shutdown():
-        robot.run()
-        rate.sleep()
+        condition = None if debug else rospy.Rate(100)
+        while not condition:
+            robot.run()
+            if debug:
+                time.sleep(rate)
+            else:
+                rate.sleep()
     except KeyboardInterrupt:
         pass
     wheel.power_off()

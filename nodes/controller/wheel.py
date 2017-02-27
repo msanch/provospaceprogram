@@ -22,9 +22,6 @@ def power_off():
 class Wheel(object):
     def __init__(self, wheel_num):
         self.wheel_num = wheel_num
-        # self.linear_velocity = linear_velocity
-        # self.wheel_spin = wheel_spin = 0
-        # psoc.setPID(self.wheel_num, 1, 1, 9000)  # 9000
 
     def get_speed(self):
         """
@@ -40,3 +37,5 @@ class Wheel(object):
         psoc.set_motor_speed(self.wheel_num, speed)
         psoc.spin()
 
+    def set_debug(self, debug):
+        psoc.set_debug(debug)

@@ -3,8 +3,18 @@ import serial
 import sys
 import time
 
+class FakeSerial():
+    def read(self, *args, **kwargs):
+        pass
 
-ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None)
+    def write(self, *args, **kwargs):
+        pass
+
+ser = FakeSerial()
+
+def set_debug(debug):
+    global ser
+    ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None) if not debug else FakeSerial()
 
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
