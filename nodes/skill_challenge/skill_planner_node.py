@@ -2,6 +2,7 @@
 
 import math
 import sys
+import time
 
 import rospy
 from geometry_msgs.msg import Pose2D
@@ -114,6 +115,7 @@ def main():
     # the rospy scripts to run
     COMMANDLINE_ARGUMENT = 1
     command_number = sys.argv[COMMANDLINE_ARGUMENT]
+    time.sleep(0.5)
     if command_number == "1":
         path_planner.spin(int(sys.argv[COMMANDLINE_ARGUMENT + 1]))
     elif command_number == "2":

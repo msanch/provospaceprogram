@@ -86,7 +86,6 @@ class Robot(object):
         # print delta_x, delta_y, delta_theta
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.desired_theta, velocity_list)
-        print desired_wheel_velocity_list
         wheel.set_motor_speed(desired_wheel_velocity_list)
 
 def main():
