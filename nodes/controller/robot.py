@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = False  # True
+debug = True
 import math
 import sys
 if debug:

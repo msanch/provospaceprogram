@@ -7,6 +7,13 @@ import numpy as np
 import rospy
 import cv2
 import math
+import signal
+import ipdb
+
+# def sig_handler(signum, frame):
+#     ipdb.set_trace()
+
+# signal.signal(signal.SIGSEGV, sig_handler)
 
 
 class Vision:
@@ -30,14 +37,15 @@ class Vision:
         np.array([105, 255, 255])
     ]
 
+    created = dict()
+
     def __init__(self):
         self.bridge = CvBridge()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         self.ally1_pub = rospy.Publisher('psp_ally1', Pose2D, queue_size=10)
         self.ball_pub = rospy.Publisher('psp_ball', Pose2D, queue_size=10)
-        self.init_window('Ball', self.ball_range)
-        window_name = "Calibration Window"
-        cv2.namedWindow(window_name)
+
+        # self.init_window('Ball', self.ball_range)
 
     def init_window(self, name, color_range):
         cv2.namedWindow(name, cv2.WINDOW_AUTOSIZE)
@@ -73,20 +81,17 @@ class Vision:
             self.ball_range[1][0] = hsv_pixel[0]+10
 
     def receive_frame(self, image):
-        print 1
         window_name = "Calibration Window"
-        print 2
-        cv2.setMouseCallback(window_name, self.calibration_callback)
         self.bgr_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
         self.hsv_image = cv2.cvtColor(self.bgr_image, cv2.COLOR_BGR2HSV)
         cv2.imshow(window_name, self.bgr_image)
-        cv2.waitKey(1)
+        # cv2.setMouseCallback(window_name, self.calibration_callback)
         self.process_ball('Ball', self.ball_range, self.ball_pub)
-        self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
+        cv2.waitKey(1)
+        # self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
 
-    def calibrate_parameter(self, color_range, index, r, m, new_value):
-        color_range[0][index] = max(new_value - r, 0)
-        color_range[1][index] = min(new_value + r, m)
+    def calibrate_parameter(self, color_range, index_1, index_2, r, m, new_value):
+        color_range[index_1][index_2] = new_value
 
     def process_ball(self, name, color_range, pub):
         mask = cv2.inRange(self.hsv_image, color_range[0], color_range[1])
@@ -96,20 +101,28 @@ class Vision:
         contour_moments = []
         for contour in contours:
             mm = cv2.moments(contour)
-            if mm['m00'] > 10:
+            if mm['m00'] > 0:
                 contour_moments.append(mm)
 
         if len(contour_moments) < 1:
             cv2.imshow(name, mask)
-            cv2.waitKey(1)
+            # cv2.waitKey(1)
             return
 
         contour_moment = max(contour_moments, key=lambda m: m['m00'])
 
         x, y = [int(x) for x in self.get_center_of_mass(contour_moment)]
         cv2.rectangle(mask, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
+        if not self.created:
+            cv2.createTrackbar('Hue Min', name, color_range[0][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 0, 10, 179, v))
+            cv2.createTrackbar('Hue Max', name, color_range[1][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 1, 10, 179, v))
+            cv2.createTrackbar('Sat Min', name, color_range[0][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 0, 100, 255, v))
+            cv2.createTrackbar('Sat Max', name, color_range[1][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 1, 100, 255, v))
+            cv2.createTrackbar('Val Min', name, color_range[0][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 0, 50, 255, v))
+            cv2.createTrackbar('Val Max', name, color_range[1][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 1, 50, 255, v))
+            created = True
         cv2.imshow(name, mask)
-        cv2.waitKey(1)
+        # cv2.waitKey(5)
 
         pub.publish(Pose2D(x=x, y=y, theta=0))
 
@@ -126,7 +139,7 @@ class Vision:
 
         if len(contour_moments) < 2:
             cv2.imshow(name, mask)
-            cv2.waitKey(1)
+            # cv2.waitKey(1)
             return
 
         contour_moments.sort(key=lambda m: m['m00'])
@@ -136,7 +149,7 @@ class Vision:
             x, y = [int(x) for x in self.get_center_of_mass(mm)]
             cv2.rectangle(mask, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
         cv2.imshow(name, mask)
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
 
         mm_large = contour_moments[-1]
         mm_small = contour_moments[-2]

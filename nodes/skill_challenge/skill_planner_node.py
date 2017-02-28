@@ -103,7 +103,7 @@ class PathPlanner():
                 msg = Pose2D(x=end_point[0],
                              y=end_point[1],
                              theta=theta)
-                self.path_publisher.publisher(msg)
+                self.path_publisher.publish(msg)
         # FIXME ROSPY : no need to return?
 
 def main():
