@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = False # True
+debug = True
 import math
 if debug:
     import time
@@ -42,11 +42,11 @@ class Robot(object):
         self.wheels[0].set_debug(debug)
         if not debug:
             rospy.Subscriber("psp_desired_skills_state", Pose2D,
-                             self._handle_desired_state)
+                             self.handle_desired_state)
             rospy.Subscriber("psp_current_state", Pose2D,
                              self._handle_current_state)
 
-    def _handle_desired_state(self, msg):
+    def handle_desired_state(self, msg):
         print "Handling desired"
         self.desired_position = (msg.x, msg.y)
         self.desired_theta = msg.theta
