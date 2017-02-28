@@ -77,15 +77,15 @@ class Vision:
         if event == cv2.EVENT_LBUTTONDOWN:
             hsv_pixel = self.hsv_image[y][x]
             print hsv_pixel
-            self.ball_range[0][0] = hsv_pixel[0]-10
-            self.ball_range[1][0] = hsv_pixel[0]+10
+            self.ball_range[0] = hsv_pixel-10
+            self.ball_range[1] = hsv_pixel+10
 
     def receive_frame(self, image):
         window_name = "Calibration Window"
         self.bgr_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
         self.hsv_image = cv2.cvtColor(self.bgr_image, cv2.COLOR_BGR2HSV)
         cv2.imshow(window_name, self.bgr_image)
-        # cv2.setMouseCallback(window_name, self.calibration_callback)
+        cv2.setMouseCallback(window_name, self.calibration_callback)
         self.process_ball('Ball', self.ball_range, self.ball_pub)
         cv2.waitKey(1)
         # self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
@@ -96,7 +96,7 @@ class Vision:
     def process_ball(self, name, color_range, pub):
         mask = cv2.inRange(self.hsv_image, color_range[0], color_range[1])
 
-        im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        im2, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
         contour_moments = []
         for contour in contours:
@@ -114,12 +114,12 @@ class Vision:
         x, y = [int(x) for x in self.get_center_of_mass(contour_moment)]
         cv2.rectangle(mask, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
         if not self.created:
-            cv2.createTrackbar('Hue Min', name, color_range[0][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 0, 10, 179, v))
-            cv2.createTrackbar('Hue Max', name, color_range[1][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 1, 10, 179, v))
-            cv2.createTrackbar('Sat Min', name, color_range[0][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 0, 100, 255, v))
-            cv2.createTrackbar('Sat Max', name, color_range[1][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 1, 100, 255, v))
-            cv2.createTrackbar('Val Min', name, color_range[0][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 0, 50, 255, v))
-            cv2.createTrackbar('Val Max', name, color_range[1][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 1, 50, 255, v))
+            # cv2.createTrackbar('Hue Min', name, color_range[0][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 0, 10, 179, v))
+            # cv2.createTrackbar('Hue Max', name, color_range[1][0], 179, lambda v: v) # self.calibrate_parameter(color_range, 0, 1, 10, 179, v))
+            # cv2.createTrackbar('Sat Min', name, color_range[0][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 0, 100, 255, v))
+            # cv2.createTrackbar('Sat Max', name, color_range[1][1], 255, lambda v: v) # self.calibrate_parameter(color_range, 1, 1, 100, 255, v))
+            # cv2.createTrackbar('Val Min', name, color_range[0][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 0, 50, 255, v))
+            # cv2.createTrackbar('Val Max', name, color_range[1][2], 255, lambda v: v) # self.calibrate_parameter(color_range, 2, 1, 50, 255, v))
             created = True
         cv2.imshow(name, mask)
         # cv2.waitKey(5)
