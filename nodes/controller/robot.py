@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = True
+debug = False  # True
 import math
 import sys
 if debug:
@@ -38,12 +38,12 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = (0.0, 10.0) 
-        self.desired_theta = 0 # 3.14159
+        self.desired_position = position  # (10.0, 0.0) 
+        self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            rospy.Subscriber("psp_desired_skills_state", Pose2D,
-                             self.handle_desired_state)
+#            rospy.Subscriber("psp_desired_skills_state", Pose2D,
+#                             self.handle_desired_state)
             rospy.Subscriber("psp_current_state", Pose2D,
                              self._handle_current_state)
 
@@ -102,9 +102,9 @@ def main():
             robot.run()
             if debug:
                 time.sleep(rate)
+                sys.exit(-1)
             else:
                 rate.sleep()
-            sys.exit(-1)
     except KeyboardInterrupt:
         pass
     wheel.power_off()
