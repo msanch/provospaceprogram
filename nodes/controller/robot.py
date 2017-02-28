@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 debug = True
 import math
+import sys
 if debug:
     import time
 else:
@@ -103,6 +104,7 @@ def main():
                 time.sleep(rate)
             else:
                 rate.sleep()
+            sys.exit(-1)
     except KeyboardInterrupt:
         pass
     wheel.power_off()

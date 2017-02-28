@@ -30,27 +30,27 @@ WHEEL_DISTANCE_FROM_CENTER = 0.073
 def _get_center_of_robot_to_wheel_vectors():
     result = [
         (-WHEEL_DISTANCE_FROM_CENTER, 0, 0),
-        (WHEEL_DISTANCE_FROM_CENTER  * numpy.cos(-60*2*numpy.pi/360),
-            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(-60*2*numpy.pi/360), 0),
-        (WHEEL_DISTANCE_FROM_CENTER * numpy.cos(60*2*numpy.pi/360),
-            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(60*2*numpy.pi/360), 0)
+        (WHEEL_DISTANCE_FROM_CENTER  * numpy.cos(-60*numpy.pi/180),
+            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(-60*numpy.pi/180), 0),
+        (WHEEL_DISTANCE_FROM_CENTER * numpy.cos(60*numpy.pi/180),
+            WHEEL_DISTANCE_FROM_CENTER * numpy.sin(60*numpy.pi/180), 0)
     ]
     return numpy.matrix(result)
 
 
 def _create_speed_matrix(theta):
     """
-    [
-        [x,y]
-        [x,y]
-        [x,y]
-    ]
+    (
+        (x,y)
+        (x,y)
+        (x,y)
+    )
     """
-    result = [
-        [numpy.cos(270*numpy.pi/180 + theta), numpy.sin(270*numpy.pi/180 + theta)],
-        [numpy.cos( 30*numpy.pi/180 + theta), numpy.sin( 30*numpy.pi/180 + theta)],
-        [numpy.cos(150*numpy.pi/180 + theta), numpy.sin(150*numpy.pi/180 + theta)]
-    ]
+    result = (
+        (numpy.cos(270*numpy.pi/180 + theta), numpy.sin(270*numpy.pi/180 + theta)),
+        (numpy.cos( 30*numpy.pi/180 + theta), numpy.sin( 30*numpy.pi/180 + theta)),
+        (numpy.cos(150*numpy.pi/180 + theta), numpy.sin(150*numpy.pi/180 + theta))
+    )
     return result
 
 RADIUS_OF_WHEELS = 0.030
