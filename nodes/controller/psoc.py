@@ -40,9 +40,9 @@ def set_pids(speeds):
     qpps_1 = abs(speeds[0]*10000)
     qpps_2 = abs(speeds[1]*10000)
     qpps_3 = abs(speeds[2]*10000)
-    setPID(1, 1, 0.5, qpps_1)  # Could be 5-10 (10-more jerky, 1/10)
-    setPID(2, 1, 0.5, qpps_2)  # 
-    setPID(3, 1, 0.5, qpps_3)
+    setPID(1, 1, 5.5, qpps_1)  # Could be 5-10 (10-more jerky, 1/10)
+    setPID(2, 1, 5.5, qpps_2)  # 
+    setPID(3, 1, 5.5, qpps_3)
 
 
 def setSpeed(s1, s2, s3):
