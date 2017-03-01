@@ -53,7 +53,7 @@ def setSpeed(s1, s2, s3):
 
 
 def set_motor_speeds(speeds):
-    set_pids(speeds)
+    # set_pids(speeds)
     setSpeed(speeds[0]*PULSES_PER_ROTATION, speeds[1]*PULSES_PER_ROTATION, speeds[2]*PULSES_PER_ROTATION)
 
 
