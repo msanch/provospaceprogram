@@ -18,14 +18,16 @@ import ipdb
 
 class Vision:
 
+    _x_min = 90
+    _x_max = 745
+    _y_min = 30
+    _y_max = 465
+
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39
 
-    _FIELD_WIDTH_PIXELS = 600
-    _FIELD_HEIGHT_PIXELS = 420
-
-    _CAMERA_WIDTH = 865
-    _CAMERA_HEIGHT = 480
+    _FIELD_WIDTH_PIXELS = _x_max - _x_min
+    _FIELD_HEIGHT_PIXELS = _y_max - _y_min
 
     ally1_range = [
         np.array([30, 10, 100]),
@@ -38,11 +40,6 @@ class Vision:
     ]
 
     current_range = ball_range
-
-    _x_min = 85
-    _x_max = 750
-    _y_min = 30
-    _y_max = 465
 
     min_hsv = [0, 0, 0]
     max_hsv = [179, 255, 255]
@@ -63,15 +60,13 @@ class Vision:
         
 
     def image_to_world_coordinates(self, x, y):
-        x -= self._CAMERA_WIDTH / 2
-        y -= self._CAMERA_HEIGHT / 2
+        x -= self._FIELD_WIDTH_PIXELS / 2
+        y -= self._FIELD_HEIGHT_PIXELS / 2
 
         x *= self._FIELD_WIDTH /  self._FIELD_WIDTH_PIXELS
         y *= self._FIELD_HEIGHT / self._FIELD_HEIGHT_PIXELS
 
-        y = -y
-
-        return x, y
+        return x, -y
 
     def get_center_of_mass(self, moment):
         m10 = moment['m10']
@@ -86,7 +81,8 @@ class Vision:
             hsv_pixel = self.hsv_image[y][x]
             self.current_range[0] = np.array([max(val-20, m) for val, m in zip(hsv_pixel, self.min_hsv)])
             self.current_range[1] = np.array([min(val+20, m) for val, m in zip(hsv_pixel, self.max_hsv)])
-            print self.ball_range
+            print self.image_to_world_coordinates(x, y)
+            # print self.ball_range
 
     def receive_frame(self, image):
         window_name = "Calibration Window"
@@ -97,7 +93,6 @@ class Vision:
         x, y, a = self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
         cv2.imshow(window_name, self.bgr_image)
         cv2.setMouseCallback(window_name, self.calibration_callback)
-        # cv2.setKeyboardCallback(window_name, self.keyboard_callback)
         char = cv2.waitKey(1)
         if char != -1:
             print x, y, a
@@ -150,7 +145,7 @@ class Vision:
 
         if len(contour_moments) < 2:
             cv2.imshow(name, mask)
-            return
+            return [None]*3
 
         contour_moments.sort(key=lambda m: m['m00'])
         contour_moments = contour_moments[-2:]
@@ -167,7 +162,7 @@ class Vision:
         x, y = (l_x + s_x) / 2, (l_y + s_y) / 2
 
         angle = math.atan2(s_y - l_y, s_x - l_x)
-        pub.publish(Pose2D(x=x, y=y, theta=angle))
+        pub.publish(Pose2D(x=0, y=-0.5, theta=0))  # Pose2D(x=x, y=y, theta=angle))
         return x, y, angle
 
 
