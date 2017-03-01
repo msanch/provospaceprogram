@@ -15,7 +15,7 @@ class PathPlanner():
     
     def __init__(self):
         # FIXME ROSPY : topics named right?
-        rospy.Subscriber("psp_current_state", Pose2D, self._handle_current_state)
+        rospy.Subscriber("psp_ally1", Pose2D, self._handle_current_state)
         # FIXME ROSPY : Am I good with the queue size?
         self.path_publisher = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
         self.current_x = 0.0
@@ -73,6 +73,7 @@ class PathPlanner():
                          y=0,
                          theta=theta)
             self.path_publisher.publish(msg)
+            # print "Published"
         # FIXME ROSPY : No need to return?
 
     def _get_box_end_points(self, length):
@@ -104,6 +105,7 @@ class PathPlanner():
                              y=end_point[1],
                              theta=theta)
                 self.path_publisher.publish(msg)
+                # print "Published"
         # FIXME ROSPY : no need to return?
 
 def main():
@@ -115,7 +117,7 @@ def main():
     # the rospy scripts to run
     COMMANDLINE_ARGUMENT = 1
     command_number = sys.argv[COMMANDLINE_ARGUMENT]
-    time.sleep(0.5)
+    time.sleep(1.0)
     if command_number == "1":
         path_planner.spin(int(sys.argv[COMMANDLINE_ARGUMENT + 1]))
     elif command_number == "2":

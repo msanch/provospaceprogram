@@ -15,6 +15,7 @@ ser = FakeSerial()
 def set_debug(debug):
     global ser
     ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None) if not debug else FakeSerial()
+    setT(20, 50)
 
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
@@ -93,5 +94,4 @@ def disengage():
     ser.write('d')
 
 
-setT(20, 50)
 
