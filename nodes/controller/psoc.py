@@ -37,12 +37,12 @@ def setPower(p1, p2, p3):
 
 
 def set_pids(speeds):
-    qpps_1 = abs(speeds[0]*4500)
-    qpps_2 = abs(speeds[1]*4500)
-    qpps_3 = abs(speeds[2]*4500)
-    setPID(1, 1, 2.0, qpps_1)
-    setPID(2, 1, 2.0, qpps_2)
-    setPID(3, 1, 2.0, qpps_3)
+    qpps_1 = abs(speeds[0]*10000)
+    qpps_2 = abs(speeds[1]*10000)
+    qpps_3 = abs(speeds[2]*10000)
+    setPID(1, 1, 0.5, qpps_1)  # Could be 5-10 (10-more jerky, 1/10)
+    setPID(2, 1, 0.5, qpps_2)  # 
+    setPID(3, 1, 0.5, qpps_3)
 
 
 def setSpeed(s1, s2, s3):
@@ -53,7 +53,7 @@ def setSpeed(s1, s2, s3):
 
 
 def set_motor_speeds(speeds):
-    set_pids(speeds)
+    # set_pids(speeds)
     setSpeed(speeds[0]*PULSES_PER_ROTATION, speeds[1]*PULSES_PER_ROTATION, speeds[2]*PULSES_PER_ROTATION)
 
 
