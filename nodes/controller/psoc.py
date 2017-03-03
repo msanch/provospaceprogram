@@ -17,7 +17,7 @@ def set_debug(debug):
     ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None) if not debug else FakeSerial()
     print "Set PIDS"
     setT(20, 50)
-    set_pids(speeds)
+    set_pids()
 
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
