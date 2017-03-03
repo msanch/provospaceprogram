@@ -150,20 +150,29 @@ class Vision:
         contour_moments.sort(key=lambda m: m['m00'])
         contour_moments = contour_moments[-2:]
 
-        for mm in contour_moments:
-            x, y = [int(x) for x in self.get_center_of_mass(mm)]
-            cv2.rectangle(self.bgr_image, (x-5, y-5), (x+5, y+5), (0,255,0), -1)
-        cv2.imshow(name, mask)
-
         mm_large = contour_moments[-1]
         mm_small = contour_moments[-2]
-        l_x, l_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_large))
-        s_x, s_y = self.image_to_world_coordinates(*self.get_center_of_mass(mm_small))
-        x, y = (l_x + s_x) / 2, (l_y + s_y) / 2
+        image_large_x, image_large_y = self.get_center_of_mass(mm_large)
+        image_small_x, image_small_y = self.get_center_of_mass(mm_small)
+        field_large_x, field_large_y = self.image_to_world_coordinates(image_large_x, image_large_y)
+        field_small_x, field_small_y = self.image_to_world_coordinates(image_small_x, image_small_y)
+        x, y = (field_large_x + field_small_x) / 2, (field_large_y + field_small_y) / 2
 
-        angle = math.atan2(s_y - l_y, s_x - l_x)
-        pub.publish(Pose2D(x=0, y=-0.5, theta=0))  # Pose2D(x=x, y=y, theta=angle))
+        self.draw_rectangle(image_small_x, image_small_y, self.bgr_image)
+        self.draw_rectangle(image_large_x, image_large_y, self.bgr_image)
+        self.draw_rectangle(image_small_x + image_small_x - image_large_x,
+            image_small_y + image_small_y - image_large_y,
+            self.bgr_image, 3)
+
+        cv2.imshow(name, mask)
+
+        angle = math.atan2(image_small_y - image_large_y, image_small_x - image_large_x)
+        pub.publish(Pose2D(x=x, y=y, theta=angle))
         return x, y, angle
+
+    def draw_rectangle(self, x, y, image, size=5):
+        x, y = int(x), int(y)
+        cv2.rectangle(image, (x-size, y-size), (x+size, y+size), (0,255,0), -1)
 
 
 def main():

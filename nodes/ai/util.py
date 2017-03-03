@@ -28,6 +28,8 @@ def get_point_for_def(ball):
 def get_angle_from_points(p1, p2):
 	adjacent = p2.y - p1.y
 	hypotenuse = p1.distance_from(p2)
+	if hypotenuse == 0:
+		return 0
 	radians = math.acos(adjacent/hypotenuse)
 	degrees = math.degrees(radians)
 	if p1.x - p2.x < 0:
