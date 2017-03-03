@@ -38,7 +38,7 @@ class Robot(object):
         self.wheels = wheels
         self.current_position = position
         self.current_theta = theta
-        self.desired_position = position  # (10.0, 0.0) 
+        self.desired_position = position  # (10.0, 0.0)
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
@@ -54,7 +54,7 @@ class Robot(object):
 
     def _handle_current_state(self, msg):
         self.current_position = (msg.x, msg.y)
-        self.current_theta = msg.theta
+        self.current_theta = -1 * msg.theta
 
  
     # FIXME FINE TUNING : Set these optimal speeds
@@ -86,7 +86,7 @@ class Robot(object):
         # velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         velocity_list = [delta_x, delta_y, delta_theta]
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
-        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 10
+        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 2.0
         if normalizer != 0:
             desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
         if self.i == 100:
