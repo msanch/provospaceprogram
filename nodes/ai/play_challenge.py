@@ -27,11 +27,11 @@ class Play:
     def defense(self):
         dx = self.ball.x - self.goal.x
         dy = self.ball.y - self.goal.y
-        dist = math.sqrt(dx**2 + dy**2) * 10
-        x = self.goal.x + (dx / dist)
-        y = self.goal.y + (dy / dist)
-        print x, y
-        self.pub.publish(x=x, y=y, theta = 0)
+        dist = math.sqrt(dx**2 + dy**2)
+        desired_dist = .4
+        x = self.goal.x + (dx / dist * desired_dist)
+        y = self.goal.y + (dy / dist * desired_dist)
+        self.pub.publish(Pose2D(x=x, y=y, theta = 0))
 
     def attack(self):
         print 'get behind ball'
@@ -39,7 +39,7 @@ class Play:
         print 'run to goal'
         self.tactics.run_to_goal(self.robot_me, self.ball)
         print 'done'
-        
+
 def main():
     rospy.init_node("psp_play_challenge", anonymous=False)
     play = Play()
