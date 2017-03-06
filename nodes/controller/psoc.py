@@ -15,7 +15,9 @@ ser = FakeSerial()
 def set_debug(debug):
     global ser
     ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None) if not debug else FakeSerial()
+    print "Set PIDS"
     setT(20, 50)
+    set_pids()
 
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
@@ -36,13 +38,10 @@ def setPower(p1, p2, p3):
     writeFloat(p3)
 
 
-def set_pids(speeds):
-    qpps_1 = abs(speeds[0]*10000)
-    qpps_2 = abs(speeds[1]*10000)
-    qpps_3 = abs(speeds[2]*10000)
-    setPID(1, 1, 0.5, qpps_1)  # Could be 5-10 (10-more jerky, 1/10)
-    setPID(2, 1, 0.5, qpps_2)  # 
-    setPID(3, 1, 0.5, qpps_3)
+def set_pids():
+    setPID(1, 1, 5.0, 19400*2)
+    setPID(2, 1, 5.0, 20600*2)
+    setPID(3, 1, 5.0, 21200*2)
 
 
 def setSpeed(s1, s2, s3):
@@ -53,7 +52,6 @@ def setSpeed(s1, s2, s3):
 
 
 def set_motor_speeds(speeds):
-    # set_pids(speeds)
     setSpeed(speeds[0]*PULSES_PER_ROTATION, speeds[1]*PULSES_PER_ROTATION, speeds[2]*PULSES_PER_ROTATION)
 
 
@@ -92,6 +90,4 @@ def getEncoderCount():
 
 def disengage():
     ser.write('d')
-
-
 
