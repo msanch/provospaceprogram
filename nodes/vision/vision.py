@@ -3,6 +3,7 @@
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import Image
+import datetime
 import numpy as np
 import rospy
 import cv2
@@ -20,8 +21,8 @@ class Vision:
 
     _x_min = 90
     _x_max = 745
-    _y_min = 30
-    _y_max = 465
+    _y_min = 20
+    _y_max = 455
 
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39
@@ -52,6 +53,7 @@ class Vision:
         rospy.Subscriber('psp_desired_skills_state', Pose2D, self.receive_desired_pos)
         self.ally1_pub = rospy.Publisher('psp_ally1', Pose2D, queue_size=10)
         self.ball_pub = rospy.Publisher('psp_ball', Pose2D, queue_size=10)
+        self.frame_time = 0
         # self.init_window('Ball', self.ball_range)
 
     def init_window(self, name, color_range):
@@ -91,9 +93,10 @@ class Vision:
     def calibration_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             hsv_pixel = self.hsv_image[y][x]
-            self.current_range[0] = np.array([max(val-20, m) for val, m in zip(hsv_pixel, self.min_hsv)])
-            self.current_range[1] = np.array([min(val+20, m) for val, m in zip(hsv_pixel, self.max_hsv)])
             print self.image_to_world_coordinates(x, y)
+            if self.current_range is not None:
+                self.current_range[0] = np.array([max(val-20, m) for val, m in zip(hsv_pixel, self.min_hsv)])
+                self.current_range[1] = np.array([min(val+20, m) for val, m in zip(hsv_pixel, self.max_hsv)])
             # print self.ball_range
 
     def receive_desired_pos(self, msg):
@@ -101,6 +104,9 @@ class Vision:
         self.desired_pos = msg
 
     def receive_frame(self, image):
+        frame_now = processing_time = datetime.datetime.now().time().microsecond
+        # print 'Time Between frames', frame_now - self.frame_time
+        self.frame_time = frame_now
         window_name = "Calibration Window"
         self.bgr_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
         self.bgr_image = np.array([np.array(row[self._x_min:self._x_max+1]) for row in self.bgr_image[self._y_min:self._y_max+1]])
@@ -113,7 +119,8 @@ class Vision:
         char = cv2.waitKey(1)
         if char != -1:
             print x, y, a
-        self.set_current_range(char)
+            self.set_current_range(char)
+        # print 'Time for processing', datetime.datetime.now().time().microsecond - processing_time
 
     def calibrate_parameter(self, color_range, index_1, index_2, r, m, new_value):
         color_range[index_1][index_2] = new_value
@@ -123,10 +130,13 @@ class Vision:
             self.current_range = self.ball_range
         elif char == ord('1'):
             self.current_range = self.ally1_range
+        else:
+            self.current_range = None
 
     def process_ball(self, name, color_range, pub):
         mask = cv2.inRange(self.hsv_image, color_range[0], color_range[1])
         mask = cv2.GaussianBlur(mask, (3, 3), 0)
+        cv2.imshow(name, mask)
 
         im2, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -143,10 +153,9 @@ class Vision:
         contour_moment = max(contour_moments, key=lambda m: m['m00'])
 
         image_x, image_y = [int(x) for x in self.get_center_of_mass(contour_moment)]
-        world_x, world_y = self.image_to_world_coordinates(image_x, image_y)
         self.draw_rectangle(image_x, image_y, self.bgr_image)
-        cv2.imshow(name, mask)
 
+        world_x, world_y = self.image_to_world_coordinates(image_x, image_y)
         pub.publish(Pose2D(x=world_x, y=world_y, theta=0))
 
     def process_robot(self, name, color_range, pub):
@@ -166,15 +175,13 @@ class Vision:
             return [None]*3
 
         contour_moments.sort(key=lambda m: m['m00'])
-        contour_moments = contour_moments[-2:]
+        mm_small, mm_large = contour_moments[-2:]
 
-        mm_large = contour_moments[-1]
-        mm_small = contour_moments[-2]
         image_large_x, image_large_y = self.get_center_of_mass(mm_large)
         image_small_x, image_small_y = self.get_center_of_mass(mm_small)
-        field_large_x, field_large_y = self.image_to_world_coordinates(image_large_x, image_large_y)
-        field_small_x, field_small_y = self.image_to_world_coordinates(image_small_x, image_small_y)
-        x, y = (field_large_x + field_small_x) / 2, (field_large_y + field_small_y) / 2
+        world_large_x, world_large_y = self.image_to_world_coordinates(image_large_x, image_large_y)
+        world_small_x, world_small_y = self.image_to_world_coordinates(image_small_x, image_small_y)
+        x, y = (world_large_x + world_small_x) / 2, (world_large_y + world_small_y) / 2
 
         self.draw_rectangle(image_small_x, image_small_y, self.bgr_image)
         self.draw_rectangle(image_large_x, image_large_y, self.bgr_image)

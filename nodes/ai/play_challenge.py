@@ -45,8 +45,8 @@ def main():
     play = Play()
     try:
         while not rospy.is_shutdown():
-            play.attack()
-    except:
+            play.defense()
+    except KeyboardInterrupt:
         pass
 
 if __name__ == "__main__":
