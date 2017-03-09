@@ -7,43 +7,48 @@ from geometry_msgs.msg import Pose2D
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
 
+is_team_home = True
+game_state = GameState(second_half=False)
+current_pos = Pose2D()
+current_vel = Pose2D()
+current_time = time.time()
+frame_delay = .250
+
+
+def low_pass(new_pos, old_pos, alpha=0.9):
+	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
+	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
+	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
+
+
+def calculate_velocity(new_pos, old_pos, time_delta):
+	velocity = Pose2D()
+	velocity.x = (new_pos.x - old_pos.x) / time_delta
+	velocity.y = (new_pos.y - old_pos.y) / time_delta
+	velocity.theta = (new_pos.theta - old_pos.theta) / time_delta
+	return velocity
+
+
+def save_vision_msg(msg):
+	global current_pos, current_vel, current_time
+	if not is_team_home ^ game_state.second_half:
+		msg.x *= -1
+		msg.y *= -1
+		msg.theta += 180
+		msg.theta %= 360
+	low_pass(msg, current_pos)
+	velocity = calculate_velocity(msg, current_pos, time.time() - current_time + frame_delay)
+	low_pass(velocity, current_vel)
+	current_pos = msg
+	current_vel = velocity
+	current_time = time.time()
+
 
 def main():
+	global is_team_home
 	rospy.init_node('robot_estimator', anonymous=False)
 	pub = rospy.Publisher('robot_state', Pose2D, queue_size=10)
-	is_team_home = rospy.get_param('~is_team_home') or True
-	game_state = GameState(second_half=False)
-	current_pos = Pose2D()
-	current_vel = Pose2D()
-	current_time = time.time()
-	alpha = 0.2
-	frame_delay = .250
-
-	def low_pass(new_pos, old_pos):
-		new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
-		new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
-		new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
-
-	def calculate_velocity(new_pos, old_pos, time_delta):
-		velocity = Pose2D()
-		velocity.x = (new_pos.x - old_pos.x) / time_delta
-		velocity.y = (new_pos.y - old_pos.y) / time_delta
-		velocity.theta = (new_pos.theta - old_pos.theta) / time_delta
-		return velocity
-
-	def save_vision_msg(msg):
-		if not is_team_home ^ game_state.second_half:
-			msg.x *= -1
-			msg.y *= -1
-			msg.theta += 180
-			msg.theta %= 360
-		low_pass(msg, current_pos)
-		velocity = calculate_velocity(msg, current_pos, time.time() - current_time + frame_delay)
-		low_pass(velocity, current_vel)
-		current_pos = msg
-		current_vel = velocity
-		current_time = time.time()
-
+	is_team_home = rospy.get_param('~is_team_home')
 	rospy.Subscriber('psp_ally1', Pose2D, save_vision_msg)
 	rospy.Subscriber('game', GameStateMsg, game_state.update)
 
