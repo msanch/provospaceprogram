@@ -46,7 +46,7 @@ def save_vision_msg(msg):
 
 def main():
 	global is_team_home
-	rospy.init_node('robot_estimator', anonymous=False)
+	rospy.init_node('psp_ally1_estimator', anonymous=False)
 	pub = rospy.Publisher('robot_state', Pose2D, queue_size=10)
 	is_team_home = rospy.get_param('~is_team_home')
 	rospy.Subscriber('psp_ally1', Pose2D, save_vision_msg)
