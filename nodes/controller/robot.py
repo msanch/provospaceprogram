@@ -78,17 +78,31 @@ class Robot(object):
             result.append(speed)
         return result
 
+#    MINIMUM_ROTATION_NORMALIZATION_THRESHOLD = 1
+    def normalize_wheel_speed(self, desired_wheel_velocity_list):
+        result = []
+        for velocity in desired_wheel_velocity_list:
+            velocity = velocity / 1
+            #if velocity < 0.1:
+            #    velocity = 1.0
+            result.append(velocity)
+        return result
+
     i = 0
     def run(self):
-        delta_x = 100 * (self.current_position[0] - self.desired_position[0])
-        delta_y = 100 * (self.current_position[1] - self.desired_position[1])
-        delta_theta = 100 * (self.current_theta - self.desired_theta)
+        delta_x = (self.current_position[0] - self.desired_position[0])
+        delta_y = (self.current_position[1] - self.desired_position[1])
+        delta_theta = (self.current_theta - self.desired_theta)
         # velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         velocity_list = [delta_x, delta_y, delta_theta]
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
-        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 2.0
-        if normalizer != 0:
-            desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
+#        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 1.5
+#        if normalizer != 0:
+#            desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
+#        normalizer = 200
+#        desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
+
+        desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
         if self.i == 100:
             self.i = 0
             print "Currrent: ", self.current_position, self.current_theta
