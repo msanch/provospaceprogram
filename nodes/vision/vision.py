@@ -49,19 +49,13 @@ class Vision:
     def __init__(self):
         self.bridge = CvBridge()
         self.desired_pos = Pose2D()
+        self.estimated_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         rospy.Subscriber('psp_desired_skills_state', Pose2D, self.receive_desired_pos)
+        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.receive_estimated_pos)
         self.ally1_pub = rospy.Publisher('psp_ally1', Pose2D, queue_size=10)
         self.ball_pub = rospy.Publisher('psp_ball', Pose2D, queue_size=10)
         self.frame_time = 0
-        # self.init_window('Ball', self.ball_range)
-
-    def init_window(self, name, color_range):
-        cv2.namedWindow(name, cv2.WINDOW_AUTOSIZE)
-        cv2.createTrackbar('Hue', name, (color_range[0][0] + color_range[1][0]) // 2, 179, lambda v: self.calibrate_parameter(color_range, 0, 10, 179, v))
-        cv2.createTrackbar('Sat', name, (color_range[0][1] + color_range[1][1]) // 2, 255, lambda v: self.calibrate_parameter(color_range, 1, 100, 255, v))
-        cv2.createTrackbar('Val', name, (color_range[0][2] + color_range[1][2]) // 2, 255, lambda v: self.calibrate_parameter(color_range, 2, 50, 255, v))
-        
 
     def image_to_world_coordinates(self, x, y):
         x -= self._FIELD_WIDTH_PIXELS / 2
@@ -103,6 +97,10 @@ class Vision:
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
         self.desired_pos = msg
 
+    def receive_estimated_pos(self, msg):
+        msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
+        self.estimated_pos = msg
+
     def receive_frame(self, image):
         frame_now = processing_time = datetime.datetime.now().time().microsecond
         # print 'Time Between frames', frame_now - self.frame_time
@@ -114,6 +112,7 @@ class Vision:
         self.process_ball('Ball', self.ball_range, self.ball_pub)
         x, y, a = self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
         self.draw_rectangle(self.desired_pos.x, self.desired_pos.y, self.bgr_image, color=(0,0,255))
+        self.draw_rectangle(self.estimated_pos.x, self.estimated_pos.y, self.bgr_image, color=(255,0,0))
         cv2.imshow(window_name, self.bgr_image)
         cv2.setMouseCallback(window_name, self.calibration_callback)
         char = cv2.waitKey(1)
