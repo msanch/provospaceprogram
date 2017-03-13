@@ -12,10 +12,10 @@ game_state = GameState(second_half=False)
 current_pos = Pose2D()
 current_vel = Pose2D()
 current_time = time.time()
-frame_delay = .250
+frame_delay = 10
+i = 0
 
-
-def low_pass(new_pos, old_pos, alpha=0.9):
+def low_pass(new_pos, old_pos, alpha=0.0):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
@@ -45,9 +45,9 @@ def save_vision_msg(msg):
 
 
 def main():
-	global is_team_home
-	rospy.init_node('psp_ally1_estimator', anonymous=False)
-	pub = rospy.Publisher('robot_state', Pose2D, queue_size=10)
+	global is_team_home, i
+	rospy.init_node('robot_estimator', anonymous=False)
+	pub = rospy.Publisher('psp_ally1_estimator', Pose2D, queue_size=10)
 	is_team_home = rospy.get_param('~is_team_home')
 	rospy.Subscriber('psp_ally1', Pose2D, save_vision_msg)
 	rospy.Subscriber('game', GameStateMsg, game_state.update)
@@ -56,9 +56,14 @@ def main():
 	while not rospy.is_shutdown():
 		predict_time = time.time()
 		predict_pos = Pose2D()
-		predict_pos.x = current_pos.x + (current_vel.x * (predict_time - current_time))
-		predict_pos.y = current_pos.y + (current_vel.y * (predict_time - current_time))
+		predict_pos.x = current_pos.x + (current_vel.x * (predict_time - current_time + frame_delay))
+		predict_pos.y = current_pos.y + (current_vel.y * (predict_time - current_time + frame_delay))
 		predict_pos.theta = current_pos.theta + (current_vel.theta * (predict_time - current_time))
+		i += 1
+		if i % 30 == 0:
+			# print current_vel.x, current_vel.x * (predict_time - current_time + frame_delay), '\n'
+			print current_pos.x, predict_pos.x, "\n"
+			i = 0
 		pub.publish(predict_pos)
 		rate.sleep()
 

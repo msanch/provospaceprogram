@@ -14,15 +14,9 @@ class Play:
         self.goal = Pose2D(x=-1.7, y=0, theta=0)
         self.ball = Point2D()
         self.robot_me = Robot()
-        rospy.Subscriber('psp_ball', Pose2D, self.set_ball)
-        rospy.Subscriber('psp_ally1', Pose2D, self.set_me)
+        rospy.Subscriber('psp_ball', Pose2D, self.ball.update)
+        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.robot_me.update)
         self.pub = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
-
-    def set_ball(self, msg):
-        self.ball.update(msg)
-
-    def set_me(self, msg):
-        self.robot_me.update(msg)
 
     def defense(self):
         dx = self.ball.x - self.goal.x
@@ -45,10 +39,11 @@ def main():
     play = Play()
     try:
         while not rospy.is_shutdown():
-            play.defense()
+            #play.defense()
+            play.attack()
+            play.pub.publish(Pose2D())
     except KeyboardInterrupt:
         pass
 
 if __name__ == "__main__":
     main()
-

@@ -10,8 +10,8 @@ class Skills:
 		self.pub = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
 		self.rate = rospy.Rate(ROS_RATE)
 
-	def move_to_goal(self, theta):
-		self.move_to_point(OPP_GOAL, theta)
+	def move_to_goal(self, theta, p):
+		self.move_to_point(p, theta)
 
 	def move_to_point(self, point, theta):
 		self.move_to_xyt(point.x, point.y, theta)
