@@ -6,6 +6,7 @@ class Tactics():
 
 	def __init__(self, game_state):
 		self.skills = skills.Skills(game_state)
+		self.goal = constants.MY_GOAL
 
 	def follow_ball(self, robot_me, ball):
 		self.skills.move_to_xyt(robot_me.start_x(), ball.y, 0)
@@ -13,35 +14,26 @@ class Tactics():
 	def get_behind_ball(self, robot_me, ball):
 		# first check to see if ball is behind you, if so then move to get behind 
 		# print 'get_behind_ball'
-		point = util.get_point_behind_ball(ball)
+		point = util.get_point_behind_ball(ball, self.goal)
 		is_within_dist = robot_me.location.is_within_distance_from(point, .1)
-		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, constants.OPP_GOAL)
-		# print is_within_dist, angle_diff
+		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
 		while not (is_within_dist and angle_diff < constants.MAX_ANGLE_DIFF):
-			# TODO: check if the ball is right behind me, then if it will be in my path, then go to it
-			# if util.is_ball_behind(ball, robot_me.location):
-			# 	# get around it
-			# 	if angle_diff > 1.5: # ball is too close move around it, cut out
-			# 		pass
-			# 	else: # go to point behind the ball on its side
-			# 		pass
-			# else:
 			self.skills.move_to_point(point, util.get_angle_from_points(robot_me.location, ball))
-			point = util.get_point_behind_ball(ball)
+			point = util.get_point_behind_ball(ball, self.goal)
 			is_within_dist = robot_me.location.is_within_distance_from(point, .1)
-			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, constants.OPP_GOAL)
+			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
 			# print is_within_dist, angle_diff
 		# print 'end of get behind ball'
 
 	def run_to_goal(self, robot_me, ball):
 		# print 'run_to_goal'
 		dist = robot_me.location.distance_from(ball)
-		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, constants.OPP_GOAL)
+		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
 		# print dist, angle_diff
 		while dist < constants.POSSESSION_DIST and angle_diff < constants.MAX_ANGLE_DIFF:
-			self.skills.move_to_goal(util.get_angle_from_points(robot_me.location, constants.OPP_GOAL))
+			self.skills.move_to_goal(util.get_angle_from_points(robot_me.location, self.goal), self.goal)
 			dist = robot_me.location.distance_from(ball)
-			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, constants.OPP_GOAL)
+			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
 			# print dist, angle_diff
 		# print 'end of run to goal'
 
@@ -58,6 +50,6 @@ class Tactics():
 		self.skills.move_to_xyt(robot_me.start_x(), 0, 0)
 
 	def test_tactic(self, robot_me, ball):
-		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, constants.OPP_GOAL)
+		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
 		# print angle_diff
 		self.skills.move_to_xyt(0, 0, util.get_angle_from_points(robot_me.location, ball))

@@ -21,8 +21,8 @@ class Vision:
 
     _x_min = 90
     _x_max = 745
-    _y_min = 20
-    _y_max = 455
+    _y_min = 10
+    _y_max = 445
 
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39
@@ -89,9 +89,9 @@ class Vision:
             hsv_pixel = self.hsv_image[y][x]
             print self.image_to_world_coordinates(x, y)
             if self.current_range is not None:
-                self.current_range[0] = np.array([max(val-20, m) for val, m in zip(hsv_pixel, self.min_hsv)])
-                self.current_range[1] = np.array([min(val+20, m) for val, m in zip(hsv_pixel, self.max_hsv)])
-            # print self.ball_range
+                self.current_range[0] = np.array([max(val-25, m) for val, m in zip(hsv_pixel, self.min_hsv)])
+                self.current_range[1] = np.array([min(val+25, m) for val, m in zip(hsv_pixel, self.max_hsv)])
+                print self.current_range
 
     def receive_desired_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
