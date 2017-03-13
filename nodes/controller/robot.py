@@ -82,7 +82,7 @@ class Robot(object):
     def normalize_wheel_speed(self, desired_wheel_velocity_list):
         result = []
         for velocity in desired_wheel_velocity_list:
-            velocity = velocity / 1
+            velocity = velocity / 1.5
             #if velocity < 0.1:
             #    velocity = 1.0
             result.append(velocity)
@@ -93,6 +93,12 @@ class Robot(object):
         delta_x = (self.current_position[0] - self.desired_position[0])
         delta_y = (self.current_position[1] - self.desired_position[1])
         delta_theta = (self.current_theta - self.desired_theta)
+        # Ben's stabilizer
+        dist = math.sqrt(delta_x**2 + delta_y**2)
+        if 0.1 < dist < 0.5:
+            delta_x /= dist / 0.5
+            delta_y /= dist / 0.5
+        # end Ben's stabilizer
         # velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         velocity_list = [delta_x, delta_y, delta_theta]
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
@@ -108,6 +114,7 @@ class Robot(object):
             print "Currrent: ", self.current_position, self.current_theta
             print "Desired: ", self.desired_position, self.desired_theta
             print "Rot/s: ", desired_wheel_velocity_list
+            print math.sqrt(delta_x**2 + delta_y**2), '\n'
         self.i += 1
         wheel.set_motor_speed(desired_wheel_velocity_list)
 
