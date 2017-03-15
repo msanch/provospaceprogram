@@ -12,10 +12,10 @@ game_state = GameState(second_half=False)
 current_pos = Pose2D()
 current_vel = Pose2D()
 current_time = time.time()
-frame_delay = 10
+frame_delay = 0
 i = 0
 
-def low_pass(new_pos, old_pos, alpha=0.0):
+def low_pass(new_pos, old_pos, alpha=0.2):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
@@ -37,7 +37,7 @@ def save_vision_msg(msg):
 		msg.theta += 180
 		msg.theta %= 360
 	low_pass(msg, current_pos)
-	velocity = calculate_velocity(msg, current_pos, time.time() - current_time + frame_delay)
+	velocity = calculate_velocity(msg, current_pos, time.time() - current_time)
 	low_pass(velocity, current_vel)
 	current_pos = msg
 	current_vel = velocity
@@ -55,14 +55,15 @@ def main():
 	rate = rospy.Rate(50) # 50 Hz, 20 ms
 	while not rospy.is_shutdown():
 		predict_time = time.time()
+		time_jump = predict_time - current_time + frame_delay
 		predict_pos = Pose2D()
-		predict_pos.x = current_pos.x + (current_vel.x * (predict_time - current_time + frame_delay))
-		predict_pos.y = current_pos.y + (current_vel.y * (predict_time - current_time + frame_delay))
-		predict_pos.theta = current_pos.theta + (current_vel.theta * (predict_time - current_time))
+		predict_pos.x = current_pos.x + (current_vel.x * time_jump)
+		predict_pos.y = current_pos.y + (current_vel.y * time_jump)
+		predict_pos.theta = current_pos.theta + (current_vel.theta * time_jump)
 		i += 1
 		if i % 30 == 0:
 			# print current_vel.x, current_vel.x * (predict_time - current_time + frame_delay), '\n'
-			print current_pos.x, predict_pos.x, "\n"
+			print current_pos.x, predict_pos.x, current_vel.x, time_jump, "\n"
 			i = 0
 		pub.publish(predict_pos)
 		rate.sleep()

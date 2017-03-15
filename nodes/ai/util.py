@@ -15,7 +15,7 @@ def get_point_beside_ball(ball, robot_me):
 def get_point_behind_ball(ball, p):
 	dist_behind = .20
 	location_v = Vector2D.from_points(ball, p)
-	location_v.y *= 2.5
+	# location_v.y *= 2.5
 	location_v.set_length(dist_behind)
 	location_v.flip()
 	return ball.get_offset_point(location_v)

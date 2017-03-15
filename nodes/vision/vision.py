@@ -91,7 +91,6 @@ class Vision:
             if self.current_range is not None:
                 self.current_range[0] = np.array([max(val-25, m) for val, m in zip(hsv_pixel, self.min_hsv)])
                 self.current_range[1] = np.array([min(val+25, m) for val, m in zip(hsv_pixel, self.max_hsv)])
-                print self.current_range
 
     def receive_desired_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
@@ -117,7 +116,7 @@ class Vision:
         cv2.setMouseCallback(window_name, self.calibration_callback)
         char = cv2.waitKey(1)
         if char != -1:
-            print x, y, a
+            # print x, y, a
             self.set_current_range(char)
         # print 'Time for processing', datetime.datetime.now().time().microsecond - processing_time
 
@@ -200,7 +199,6 @@ class Vision:
 
 
 def main():
-    print 'Begin'
     rospy.init_node('psp_vision', anonymous=False)
     vision = Vision()
     rospy.spin()
