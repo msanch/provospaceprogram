@@ -49,10 +49,12 @@ class Vision:
     def __init__(self):
         self.bridge = CvBridge()
         self.desired_pos = Pose2D()
-        self.estimated_pos = Pose2D()
+        self.estimated_robot_pos = Pose2D()
+        self.estimated_ball_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         rospy.Subscriber('psp_desired_skills_state', Pose2D, self.receive_desired_pos)
-        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.receive_estimated_pos)
+        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
+        rospy.Subscriber('psp_ball_estimator', Pose2D, self.receive_estimated_ball_pos)
         self.ally1_pub = rospy.Publisher('psp_ally1', Pose2D, queue_size=10)
         self.ball_pub = rospy.Publisher('psp_ball', Pose2D, queue_size=10)
         self.frame_time = 0
@@ -96,9 +98,13 @@ class Vision:
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
         self.desired_pos = msg
 
-    def receive_estimated_pos(self, msg):
+    def receive_estimated_robot_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
-        self.estimated_pos = msg
+        self.estimated_robot_pos = msg
+
+    def receive_estimated_ball_pos(self, msg):
+        msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
+        self.estimated_ball_pos = msg
 
     def receive_frame(self, image):
         frame_now = processing_time = datetime.datetime.now().time().microsecond
@@ -111,7 +117,8 @@ class Vision:
         self.process_ball('Ball', self.ball_range, self.ball_pub)
         x, y, a = self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
         self.draw_rectangle(self.desired_pos.x, self.desired_pos.y, self.bgr_image, color=(0,0,255))
-        self.draw_rectangle(self.estimated_pos.x, self.estimated_pos.y, self.bgr_image, color=(255,0,0))
+        self.draw_rectangle(self.estimated_robot_pos.x, self.estimated_robot_pos.y, self.bgr_image, color=(255,0,0))
+        self.draw_rectangle(self.estimated_ball_pos.x, self.estimated_ball_pos.y, self.bgr_image, color=(255,0,0))
         cv2.imshow(window_name, self.bgr_image)
         cv2.setMouseCallback(window_name, self.calibration_callback)
         char = cv2.waitKey(1)

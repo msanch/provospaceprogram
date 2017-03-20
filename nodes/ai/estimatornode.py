@@ -3,6 +3,7 @@
 import rospy
 import time
 
+from random import random
 from geometry_msgs.msg import Pose2D
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
@@ -12,10 +13,10 @@ game_state = GameState(second_half=False)
 current_pos = Pose2D()
 current_vel = Pose2D()
 current_time = time.time()
-frame_delay = 0
+frame_delay = 0.250
 i = 0
 
-def low_pass(new_pos, old_pos, alpha=0.2):
+def low_pass(new_pos, old_pos, alpha=0.5):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
@@ -46,10 +47,12 @@ def save_vision_msg(msg):
 
 def main():
 	global is_team_home, i
-	rospy.init_node('robot_estimator', anonymous=False)
-	pub = rospy.Publisher('psp_ally1_estimator', Pose2D, queue_size=10)
+	rospy.init_node('psp_estimator_' + str(random())[2:], anonymous=False)
 	is_team_home = rospy.get_param('~is_team_home')
-	rospy.Subscriber('psp_ally1', Pose2D, save_vision_msg)
+	subscriber_name = rospy.get_param('~subscriber_name')
+	publisher_name = rospy.get_param('~publisher_name')
+	pub = rospy.Publisher(publisher_name, Pose2D, queue_size=10)
+	rospy.Subscriber(subscriber_name, Pose2D, save_vision_msg)
 	rospy.Subscriber('game', GameStateMsg, game_state.update)
 
 	rate = rospy.Rate(50) # 50 Hz, 20 ms
