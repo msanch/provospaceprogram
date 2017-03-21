@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- declare arg to be passed in -->
+    <arg name="team_side" default="home" />
+    <arg name="sim_mode" default="False" />
+    <arg name="two_robots" default="false" />
+
+    <!-- Outputs commands to either real world robot or simulation robot-->
+<!--     <arg name="vel_cmd_ally1" default="vel_cmds" />
+    <arg name="vel_cmd_ally2" default="vel_cmds" />
+    <arg name="kick_ally1" default="kick" />
+    <arg name="kick_ally2" default="kick" /> -->
+
+    <group ns="provospaceprogram_$(arg team_side)">
+
+        <!-- Set ROS parameters that the code can access -->
+        <param name="team_side" type="string" value="$(arg team_side)"/>
+
+        <node name="vision" pkg="provospaceprogram" type="vision.py" output="screen"/>
+
+        <node name="ball_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+            <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
+            <param name="subscriber_name" value="ball"/>
+            <param name="publisher_name" value="ball_estimator"/>
+        </node>
+
+        <node name="ally1_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+            <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
+            <param name="subscriber_name" value="ally1"/>
+            <param name="publisher_name" value="ally1_estimator"/>
+        </node>
+
+        <node name="play_challenge" pkg="provospaceprogram" type="play_challenge.py" output="screen"/>
+
+    </group>
+</launch>

@@ -42,9 +42,9 @@ class Robot(object):
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            rospy.Subscriber("psp_desired_skills_state", Pose2D,
+            rospy.Subscriber("desired_skills_state", Pose2D,
                              self.handle_desired_state)
-            rospy.Subscriber("psp_ally1_estimator", Pose2D,
+            rospy.Subscriber("ally1_estimator", Pose2D,
                              self._handle_current_state)
 
     def handle_desired_state(self, msg):
@@ -109,13 +109,13 @@ class Robot(object):
 #        desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
 
         desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
-        if self.i == 100:
-            self.i = 0
-            print "Currrent: ", self.current_position, self.current_theta
-            print "Desired: ", self.desired_position, self.desired_theta
-            print "Rot/s: ", desired_wheel_velocity_list
-            print math.sqrt(delta_x**2 + delta_y**2), '\n'
-        self.i += 1
+        # if self.i == 100:
+        #     self.i = 0
+        #     print "Currrent: ", self.current_position, self.current_theta
+        #     print "Desired: ", self.desired_position, self.desired_theta
+        #     print "Rot/s: ", desired_wheel_velocity_list
+        #     print math.sqrt(delta_x**2 + delta_y**2), '\n'
+        # self.i += 1
         wheel.set_motor_speed(desired_wheel_velocity_list)
 
 def main():

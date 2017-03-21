@@ -52,11 +52,11 @@ class Vision:
         self.estimated_robot_pos = Pose2D()
         self.estimated_ball_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
-        rospy.Subscriber('psp_desired_skills_state', Pose2D, self.receive_desired_pos)
-        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
-        rospy.Subscriber('psp_ball_estimator', Pose2D, self.receive_estimated_ball_pos)
-        self.ally1_pub = rospy.Publisher('psp_ally1', Pose2D, queue_size=10)
-        self.ball_pub = rospy.Publisher('psp_ball', Pose2D, queue_size=10)
+        rospy.Subscriber('desired_skills_state', Pose2D, self.receive_desired_pos)
+        rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
+        rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
+        self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
+        self.ball_pub = rospy.Publisher('ball', Pose2D, queue_size=10)
         self.frame_time = 0
 
     def image_to_world_coordinates(self, x, y):

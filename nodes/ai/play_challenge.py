@@ -14,9 +14,9 @@ class Play:
         self.goal = Pose2D(x=-1.7, y=0, theta=0)
         self.ball = Point2D()
         self.robot_me = Robot()
-        rospy.Subscriber('psp_ball_estimator', Pose2D, self.ball.update)
-        rospy.Subscriber('psp_ally1_estimator', Pose2D, self.robot_me.update)
-        self.pub = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
+        rospy.Subscriber('ball_estimator', Pose2D, self.ball.update)
+        rospy.Subscriber('ally1_estimator', Pose2D, self.robot_me.update)
+        self.pub = rospy.Publisher('desired_skills_state', Pose2D, queue_size=10)
 
     def defense(self):
         dx = self.ball.x - self.goal.x
@@ -35,7 +35,7 @@ class Play:
         print 'done'
 
 def main():
-    rospy.init_node("psp_play_challenge", anonymous=False)
+    rospy.init_node("play_challenge_node", anonymous=False)
     play = Play()
     try:
         while not rospy.is_shutdown():

@@ -13,10 +13,10 @@ game_state = GameState(second_half=False)
 current_pos = Pose2D()
 current_vel = Pose2D()
 current_time = time.time()
-frame_delay = 0.250
+frame_delay = 0.0
 i = 0
 
-def low_pass(new_pos, old_pos, alpha=0.5):
+def low_pass(new_pos, old_pos, alpha=0.1):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
@@ -47,7 +47,7 @@ def save_vision_msg(msg):
 
 def main():
 	global is_team_home, i
-	rospy.init_node('psp_estimator_' + str(random())[2:], anonymous=False)
+	rospy.init_node('psp_estimator', anonymous=False)
 	is_team_home = rospy.get_param('~is_team_home')
 	subscriber_name = rospy.get_param('~subscriber_name')
 	publisher_name = rospy.get_param('~publisher_name')
@@ -63,11 +63,11 @@ def main():
 		predict_pos.x = current_pos.x + (current_vel.x * time_jump)
 		predict_pos.y = current_pos.y + (current_vel.y * time_jump)
 		predict_pos.theta = current_pos.theta + (current_vel.theta * time_jump)
-		i += 1
-		if i % 30 == 0:
-			# print current_vel.x, current_vel.x * (predict_time - current_time + frame_delay), '\n'
-			print current_pos.x, predict_pos.x, current_vel.x, time_jump, "\n"
-			i = 0
+		# i += 1
+		# if i % 30 == 0:
+		# 	# print current_vel.x, current_vel.x * (predict_time - current_time + frame_delay), '\n'
+		# 	print current_pos.x, predict_pos.x, current_vel.x, time_jump, "\n"
+		# 	i = 0
 		pub.publish(predict_pos)
 		rate.sleep()
 

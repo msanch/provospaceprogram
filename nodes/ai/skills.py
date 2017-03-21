@@ -7,7 +7,7 @@ class Skills:
 
 	def __init__(self, game_state):
 		self.game_state = game_state
-		self.pub = rospy.Publisher('psp_desired_skills_state', Pose2D, queue_size=10)
+		self.pub = rospy.Publisher('desired_skills_state', Pose2D, queue_size=10)
 		self.rate = rospy.Rate(ROS_RATE)
 
 	def move_to_goal(self, theta, p):
