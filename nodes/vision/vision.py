@@ -20,7 +20,7 @@ import ipdb
 class Vision:
 
     _x_min = 90
-    _x_max = 745
+    _x_max = 740
     _y_min = 10
     _y_max = 445
 
@@ -42,8 +42,9 @@ class Vision:
 
     current_range = ball_range
 
-    min_hsv = [0, 0, 0]
+    min_hsv = [1, 0, 0]
     max_hsv = [179, 255, 255]
+    range_hsv = [25, 60, 40]
 
 
     def __init__(self):
@@ -89,10 +90,11 @@ class Vision:
     def calibration_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             hsv_pixel = self.hsv_image[y][x]
-            print self.image_to_world_coordinates(x, y)
+            # print self.image_to_world_coordinates(x, y)
             if self.current_range is not None:
-                self.current_range[0] = np.array([max(val-25, m) for val, m in zip(hsv_pixel, self.min_hsv)])
-                self.current_range[1] = np.array([min(val+25, m) for val, m in zip(hsv_pixel, self.max_hsv)])
+                self.current_range[0] = np.array([max(val-r, m) for val, m, r in zip(hsv_pixel, self.min_hsv, self.range_hsv)])
+                self.current_range[1] = np.array([min(val+r, m) for val, m, r in zip(hsv_pixel, self.max_hsv, self.range_hsv)])
+            print self.current_range
 
     def receive_desired_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
