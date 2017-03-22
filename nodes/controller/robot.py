@@ -31,6 +31,7 @@ class Robot(object):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
+        self.boost_range = (0.1, 1.0)
         self.velocity = velocity
         self.angular_velocity = angular_velocity  # omega, w
         if len(wheels) != 3:
@@ -95,9 +96,9 @@ class Robot(object):
         delta_theta = (self.current_theta - self.desired_theta)
         # Ben's stabilizer
         dist = math.sqrt(delta_x**2 + delta_y**2)
-        if 0.1 < dist < 0.5:
-            delta_x /= dist / 0.5
-            delta_y /= dist / 0.5
+        if self.boost_range[0] < dist < self.boost_range[1]:
+            delta_x /= dist / self.boost_range[1]
+            delta_y /= dist / self.boost_range[1]
         # end Ben's stabilizer
         # velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         velocity_list = [delta_x, delta_y, delta_theta]

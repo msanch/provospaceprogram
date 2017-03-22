@@ -39,9 +39,9 @@ def main():
     play = Play()
     try:
         while not rospy.is_shutdown():
-            #play.defense()
+            # play.defense()
             play.attack()
-            play.pub.publish(Pose2D())
+            # play.pub.publish(Pose2D())
     except KeyboardInterrupt:
         pass
 
