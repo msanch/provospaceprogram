@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-debug = False 
+debug = False
+keyboard = True
 import math
 import sys
 if debug:
@@ -43,9 +44,11 @@ class Robot(object):
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            rospy.Subscriber("/provospaceprogram_home/desired_skills_state", Pose2D,
+            desired_topic = "/provospaceprogram_home/desired_skills_state" if not keyboard else "psp_keyboard_desired"
+            current_topic = "/provospaceprogram_home/ally1_estimator"
+            rospy.Subscriber(desired_topic, Pose2D,
                              self.handle_desired_state)
-            rospy.Subscriber("/provospaceprogram_home/ally1_estimator", Pose2D,
+            rospy.Subscriber(current_topic, Pose2D,
                              self._handle_current_state)
 
     def handle_desired_state(self, msg):
