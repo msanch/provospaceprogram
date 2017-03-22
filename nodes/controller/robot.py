@@ -42,9 +42,9 @@ class Robot(object):
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            rospy.Subscriber("desired_skills_state", Pose2D,
+            rospy.Subscriber("/provospaceprogram_home/desired_skills_state", Pose2D,
                              self.handle_desired_state)
-            rospy.Subscriber("ally1_estimator", Pose2D,
+            rospy.Subscriber("/provospaceprogram_home/ally1_estimator", Pose2D,
                              self._handle_current_state)
 
     def handle_desired_state(self, msg):
