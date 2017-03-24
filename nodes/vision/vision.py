@@ -44,7 +44,7 @@ class Vision:
 
     min_hsv = [1, 0, 0]
     max_hsv = [179, 255, 255]
-    range_hsv = [25, 60, 40]
+    range_hsv = [25, 40, 30]
 
 
     def __init__(self):

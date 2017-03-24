@@ -16,7 +16,7 @@ current_time = time.time()
 frame_delay = 0.0
 i = 0
 
-def low_pass(new_pos, old_pos, alpha=0.1):
+def low_pass(new_pos, old_pos, alpha=0.0):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
