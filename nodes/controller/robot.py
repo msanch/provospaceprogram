@@ -32,7 +32,7 @@ class Robot(object):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
-        self.boost_range = (0.1, 1.0)
+        self.boost_range = (0.1, 0.5)
         self.velocity = velocity
         self.angular_velocity = angular_velocity  # omega, w
         if len(wheels) != 3:
@@ -113,7 +113,7 @@ class Robot(object):
 #        normalizer = 200
 #        desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
 
-        desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
+        # desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
         # if self.i == 100:
         #     self.i = 0
         #     print "Currrent: ", self.current_position, self.current_theta
