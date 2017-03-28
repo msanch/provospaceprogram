@@ -24,9 +24,9 @@ def main():
     game_state = GameState()
 
     # Subscribe to Robot and Ball positions
-    rospy.Subscriber('me',   Pose2D, me.update);
+    rospy.Subscriber('me',   Pose2D, me.update)
     rospy.Subscriber('ally', Pose2D, ally.update)
-    rospy.Subscriber('ball', Pose2D, ball.update)
+    rospy.Subscriber('ball_estimator', Pose2D, ball.update)
     rospy.Subscriber('opp1', Pose2D, opp1.update)
     rospy.Subscriber('opp2', Pose2D, opp2.update)
     rospy.Subscriber('game', GameStateMsg, game_state.update)
@@ -41,7 +41,7 @@ def main():
             elif game_state.play:
                 coach.make_play(me, ally, ball)
         except SoccerResetException:
-            rospy.loginfo('Game Reset')
+            pass # rospy.loginfo('Game Reset')
         rate.sleep()
 
 
