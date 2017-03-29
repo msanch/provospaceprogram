@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 debug = False
-keyboard = False
+keyboard = True
 import math
 import sys
 if debug:
@@ -25,7 +25,7 @@ def _limit_speed(d_x, limit):
 def _get_best_rotation(theta):
     if theta > math.pi:
         theta = theta - 2 * math.pi
-    elif theta < math.pi:
+    elif theta < -math.pi:
         theta = 2 * math.pi - theta
     return theta
 
@@ -102,16 +102,18 @@ class Robot(object):
     def run(self):
         delta_x = (self.current_position[0] - self.desired_position[0])
         delta_y = (self.current_position[1] - self.desired_position[1])
-        delta_theta = (self.current_theta - self.desired_theta)
+        # delta_theta = (self.current_theta - self.desired_theta)
+        delta_theta = (self.desired_theta - self.current_theta)
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
-        # if self.i == 100:
-        #     self.i = 0
-        #     print "Currrent: ", self.current_position, self.current_theta
-        #     print "Desired: ", self.desired_position, self.desired_theta
-        #     print "Rot/s: ", desired_wheel_velocity_list
-        #     print math.sqrt(delta_x**2 + delta_y**2), '\n'
-        # self.i += 1
+        if self.i == 100:
+            self.i = 0
+            print "Currrent: ", self.current_position, self.current_theta
+            print "Desired: ", self.desired_position, self.desired_theta
+            print "V List: ", velocity_list
+            print "Rot/s: ", desired_wheel_velocity_list
+            print math.sqrt(delta_x**2 + delta_y**2), '\n'
+        self.i += 1
         wheel.set_motor_speed(desired_wheel_velocity_list)
 
 def main():
