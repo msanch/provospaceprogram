@@ -105,16 +105,6 @@ class Robot(object):
         delta_theta = (self.current_theta - self.desired_theta)
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
-<<<<<<< HEAD
-#        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 1.5
-#        if normalizer != 0:
-#            desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
-#        normalizer = 200
-#        desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
-
-        # desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
-=======
->>>>>>> 9c9e15fbb7e1db3b0881ce79be19ed954d5643d1
         # if self.i == 100:
         #     self.i = 0
         #     print "Currrent: ", self.current_position, self.current_theta
