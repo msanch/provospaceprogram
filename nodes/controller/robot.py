@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 debug = False
-keyboard = True
+keyboard = False
 import math
 import sys
 if debug:
