@@ -116,7 +116,7 @@ class Robot(object):
 
 def main():
     print "Starting Robot Controller Node"
-    psp_number = sys.argv[1]
+    psp_number = int(sys.argv[1])
     if not debug:
         rospy.init_node("psp%d_controller" % psp_number, anonymous=False)
     robot = Robot(psp_number)
