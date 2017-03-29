@@ -22,12 +22,20 @@ def _limit_speed(d_x, limit):
     return result
 
 
+def _get_best_rotation(theta):
+    if theta > math.pi:
+        theta = theta - 2 * math.pi
+    elif theta < math.pi:
+        theta = 2 * math.pi - theta
+    return theta
+
+
 class Robot(object):
     # FIXME FINE TUNING : Set these optimal speeds
     MAX_ROBOT_SPEED = 2.0
     MIN_ROBOT_SPEED = 1.0
     CEILING_FLOOR_CUTOFF = 0.1
-    OPTIMAL_ROBOT_ANGULAR_SPEED = math.pi/4
+    MAXIMUM_ANGULAR_SPEED = math.pi/4
 
     def __init__(self, velocity=(0, 0), angular_velocity=0,
                  wheels=wheel.get_default_wheel_list(), position=(0, 0),
@@ -67,7 +75,8 @@ class Robot(object):
     def _get_velocities(self, d_x, d_y, d_t):
         result = [0, 0, 0]
         result[0], result[1] = self._smooth_speed(d_x, d_y)
-        result[2] = _limit_speed(d_t, self.OPTIMAL_ROBOT_ANGULAR_SPEED)
+        dt = _get_best_rotation(d_t)
+        result[2] = _limit_speed(dt, self.MAXIMUM_ANGULAR_SPEED)
         return result
 
     def _get_wheel_speed_list(self):
