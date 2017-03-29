@@ -53,7 +53,7 @@ class Vision:
         self.estimated_robot_pos = Pose2D()
         self.estimated_ball_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
-        rospy.Subscriber('desired_skills_state', Pose2D, self.receive_desired_pos)
+        rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos)
         rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
         rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
         self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
