@@ -37,12 +37,13 @@ class Robot(object):
     CEILING_FLOOR_CUTOFF = 0.1
     MAXIMUM_ANGULAR_SPEED = math.pi/4
 
-    def __init__(self, velocity=(0, 0), angular_velocity=0,
+    def __init__(self, psp_number, velocity=(0, 0), angular_velocity=0,
                  wheels=wheel.get_default_wheel_list(), position=(0, 0),
                  theta=0):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
+        self.psp_number = psp_number
         self.speed_limits = (self.CEILING_FLOOR_CUTOFF, self.MIN_ROBOT_SPEED, self.MAX_ROBOT_SPEED)
         self.velocity = velocity
         self.angular_velocity = angular_velocity  # omega, w
@@ -55,9 +56,9 @@ class Robot(object):
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            desired_topic = "/provospaceprogram_home/desired_skills_state" if not keyboard else "/psp_keyboard_desired"
+            desired_topic = "/provospaceprogram_home/desired_skills_state%d" % psp_number if not keyboard else "/psp_keyboard_desired"
             print desired_topic
-            current_topic = "/provospaceprogram_home/ally1_estimator"
+            current_topic = "/provospaceprogram_home/ally%d_estimator" % psp_number
             rospy.Subscriber(desired_topic, Pose2D,
                              self.handle_desired_state)
             rospy.Subscriber(current_topic, Pose2D,
@@ -70,13 +71,13 @@ class Robot(object):
 
     def _handle_current_state(self, msg):
         self.current_position = (msg.x, msg.y)
-        self.current_theta = -1 * msg.theta
+        self.current_theta = -msg.theta
 
     def _get_velocities(self, d_x, d_y, d_t):
         result = [0, 0, 0]
         result[0], result[1] = self._smooth_speed(d_x, d_y)
-        dt = _get_best_rotation(d_t)
-        result[2] = _limit_speed(dt, self.MAXIMUM_ANGULAR_SPEED)
+        d_theta = _get_best_rotation(d_t)
+        result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
         return result
 
     def _get_wheel_speed_list(self):
@@ -115,9 +116,10 @@ class Robot(object):
 
 def main():
     print "Starting Robot Controller Node"
+    psp_number = sys.argv[1]
     if not debug:
-        rospy.init_node("psp_controller", anonymous=False)
-    robot = Robot()
+        rospy.init_node("psp%d_controller" % psp_number, anonymous=False)
+    robot = Robot(psp_number)
     rate = 1/100 if debug else rospy.Rate(100)  # 100 Hz
     try:
         def condition(): return None if debug else rospy.is_shutdown()
@@ -131,7 +133,6 @@ def main():
     except KeyboardInterrupt:
         pass
     wheel.power_off()
-
 
 
 if __name__ == "__main__":
