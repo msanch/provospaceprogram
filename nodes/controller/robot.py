@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 debug = False
-keyboard = True
+keyboard = False
 import math
 import sys
 if debug:
@@ -13,26 +13,38 @@ import kinematic
 import wheel
 
 
-def _calculate_optimum_velocity(d_x, limit):
+def _limit_speed(d_x, limit):
     result = d_x
     if d_x > 0 and d_x > limit:
         result = limit
-    elif d_x < 0:
-        result = -1 * d_x
-        neg_limit = -1 * limit
-        if d_x < neg_limit:
-            result = neg_limit
+    elif d_x < 0 and d_x < -limit:
+        result = -limit
     return result
 
 
+def _get_best_rotation(theta):
+    if theta > math.pi:
+        theta = theta - 2 * math.pi
+    elif theta < math.pi:
+        theta = 2 * math.pi - theta
+    return theta
+
+
 class Robot(object):
-    def __init__(self, velocity=(0, 0), angular_velocity=0,
+    # FIXME FINE TUNING : Set these optimal speeds
+    MAX_ROBOT_SPEED = 2.0
+    MIN_ROBOT_SPEED = 1.0
+    CEILING_FLOOR_CUTOFF = 0.1
+    MAXIMUM_ANGULAR_SPEED = math.pi/4
+
+    def __init__(self, psp_number, velocity=(0, 0), angular_velocity=0,
                  wheels=wheel.get_default_wheel_list(), position=(0, 0),
                  theta=0):
         """
         wheels : [Wheel(), Wheel(), Wheel()]
         """
-        self.boost_range = (0.1, 0.5)
+        self.psp_number = psp_number
+        self.speed_limits = (self.CEILING_FLOOR_CUTOFF, self.MIN_ROBOT_SPEED, self.MAX_ROBOT_SPEED)
         self.velocity = velocity
         self.angular_velocity = angular_velocity  # omega, w
         if len(wheels) != 3:
@@ -44,9 +56,9 @@ class Robot(object):
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].set_debug(debug)
         if not debug:
-            desired_topic = "/provospaceprogram_home/desired_skills_state" if not keyboard else "/psp_keyboard_desired"
+            desired_topic = "/provospaceprogram_home/desired_skills_state%d" % psp_number if not keyboard else "/psp_keyboard_desired"
             print desired_topic
-            current_topic = "/provospaceprogram_home/ally1_estimator"
+            current_topic = "/provospaceprogram_home/ally%d_estimator" % psp_number
             rospy.Subscriber(desired_topic, Pose2D,
                              self.handle_desired_state)
             rospy.Subscriber(current_topic, Pose2D,
@@ -59,21 +71,13 @@ class Robot(object):
 
     def _handle_current_state(self, msg):
         self.current_position = (msg.x, msg.y)
-        self.current_theta = -1 * msg.theta
-
- 
-    # FIXME FINE TUNING : Set these optimal speeds
-    OPTIMAL_ROBOT_SPEED = 2.0
-    OPTIMAL_ROBOT_ANGULAR_SPEED = math.pi
+        self.current_theta = -msg.theta
 
     def _get_velocities(self, d_x, d_y, d_t):
-        result = []
-        result.append(_calculate_optimum_velocity(d_x,
-                                                  self.OPTIMAL_ROBOT_SPEED))
-        result.append(_calculate_optimum_velocity(d_y,
-                                                  self.OPTIMAL_ROBOT_SPEED))
-        result.append(_calculate_optimum_velocity(d_t,
-                                                  self.OPTIMAL_ROBOT_ANGULAR_SPEED))
+        result = [0, 0, 0]
+        result[0], result[1] = self._smooth_speed(d_x, d_y)
+        d_theta = _get_best_rotation(d_t)
+        result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
         return result
 
     def _get_wheel_speed_list(self):
@@ -83,30 +87,25 @@ class Robot(object):
             result.append(speed)
         return result
 
-#    MINIMUM_ROTATION_NORMALIZATION_THRESHOLD = 1
-    def normalize_wheel_speed(self, desired_wheel_velocity_list):
-        result = []
-        for velocity in desired_wheel_velocity_list:
-            velocity = velocity / 1.5
-            #if velocity < 0.1:
-            #    velocity = 1.0
-            result.append(velocity)
-        return result
+
+    def _smooth_speed(self, delta_x, delta_y):
+        dist = math.sqrt(delta_x**2 + delta_y**2)
+        if self.speed_limits[0] < dist < self.speed_limits[1]:
+            delta_x /= dist / self.speed_limits[1]
+            delta_y /= dist / self.speed_limits[1]
+        elif self.speed_limits[2] < dist:
+            delta_x /= dist / self.speed_limits[2]
+            delta_y /= dist / self.speed_limits[2]
+        return delta_x, delta_y
 
     i = 0
     def run(self):
         delta_x = (self.current_position[0] - self.desired_position[0])
         delta_y = (self.current_position[1] - self.desired_position[1])
         delta_theta = (self.current_theta - self.desired_theta)
-        # Ben's stabilizer
-        dist = math.sqrt(delta_x**2 + delta_y**2)
-        if self.boost_range[0] < dist < self.boost_range[1]:
-            delta_x /= dist / self.boost_range[1]
-            delta_y /= dist / self.boost_range[1]
-        # end Ben's stabilizer
-        # velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
-        velocity_list = [delta_x, delta_y, delta_theta]
+        velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
+<<<<<<< HEAD
 #        normalizer = abs(max(desired_wheel_velocity_list, key=lambda x: abs(x))) / 1.5
 #        if normalizer != 0:
 #            desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
@@ -114,6 +113,8 @@ class Robot(object):
 #        desired_wheel_velocity_list = [v/normalizer for v in desired_wheel_velocity_list]
 
         # desired_wheel_velocity_list = self.normalize_wheel_speed(desired_wheel_velocity_list)
+=======
+>>>>>>> 9c9e15fbb7e1db3b0881ce79be19ed954d5643d1
         # if self.i == 100:
         #     self.i = 0
         #     print "Currrent: ", self.current_position, self.current_theta
@@ -125,10 +126,10 @@ class Robot(object):
 
 def main():
     print "Starting Robot Controller Node"
-    # FIXME ROSPY : Valid name here?
+    psp_number = int(sys.argv[1])
     if not debug:
-        rospy.init_node("psp_controller", anonymous=False)
-    robot = Robot()
+        rospy.init_node("psp%d_controller" % psp_number, anonymous=False)
+    robot = Robot(psp_number)
     rate = 1/100 if debug else rospy.Rate(100)  # 100 Hz
     try:
         def condition(): return None if debug else rospy.is_shutdown()
@@ -142,7 +143,6 @@ def main():
     except KeyboardInterrupt:
         pass
     wheel.power_off()
-
 
 
 if __name__ == "__main__":
