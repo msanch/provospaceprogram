@@ -82,7 +82,8 @@ class Robot(object):
         result = [0, 0, 0]
         d_theta = _get_best_rotation(d_t)
         result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
-        corrected_d_x, corrected_d_y = kinematic.get_xy_correction(result[2], d_x, d_y)
+# FIXME Get corrections for rotating on xy plane
+        corrected_d_x, corrected_d_y = d_x, d_y  # kinematic.get_xy_correction(result[2], d_x, d_y)
         result[0], result[1] = self._smooth_speed(corrected_d_x, corrected_d_y)
         return result
 
