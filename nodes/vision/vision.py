@@ -94,7 +94,9 @@ class Vision:
             if self.current_range is not None:
                 self.current_range[0] = np.array([max(val-r, m) for val, m, r in zip(hsv_pixel, self.min_hsv, self.range_hsv)])
                 self.current_range[1] = np.array([min(val+r, m) for val, m, r in zip(hsv_pixel, self.max_hsv, self.range_hsv)])
-            print self.current_range
+                print self.current_range
+            else:
+                print self.image_to_world_coordinates(x, y)
 
     def receive_desired_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
