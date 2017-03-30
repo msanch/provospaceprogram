@@ -75,9 +75,10 @@ class Robot(object):
 
     def _get_velocities(self, d_x, d_y, d_t):
         result = [0, 0, 0]
-        result[0], result[1] = self._smooth_speed(d_x, d_y)
         d_theta = _get_best_rotation(d_t)
         result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
+        corrected_d_x, corrected_d_y = kinematic.get_xy_correction(result[2], d_x, d_y)
+        result[0], result[1] = self._smooth_speed(corrected_d_x, corrected_d_y)
         return result
 
     def _get_wheel_speed_list(self):

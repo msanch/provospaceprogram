@@ -13,6 +13,16 @@ def _get_rotation_matrix(theta):
 def _rotation(w1, rotation_matrix):
     return rotation_matrix * w1
 
+
+def get_xy_correction(theta, x_coordinate, y_coordinate):
+    original_vector = numpy.matrix(((x_coordinate),
+                                    (y_coordinate),
+                                    (0)))
+    rotation_matrix = _get_rotation_matrix(-theta)
+    rotated_vector = _rotation(original_vector, rotation_matrix)
+    return rotated_vector
+
+
 #
 #             Back
 #              |
