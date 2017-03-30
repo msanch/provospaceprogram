@@ -18,7 +18,7 @@ def get_xy_correction(theta, x_coordinate, y_coordinate):
     original_vector = numpy.matrix((x_coordinate,
                                     y_coordinate,
                                     0)).T
-    rotation_matrix = _get_rotation_matrix(-theta)
+    rotation_matrix = _get_rotation_matrix(-0.5*theta)
     rotated_vector = _rotation(original_vector, rotation_matrix)
     rotated_list = rotated_vector.tolist()
     x_rotated = rotated_list[0][0]
