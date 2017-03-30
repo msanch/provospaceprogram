@@ -21,14 +21,19 @@ def _limit_speed(d_x, limit):
         result = -limit
     return result
 
-
+# ROTATION_SPEED = math.pi
 def _get_best_rotation(theta):
     if theta > math.pi:
         theta = theta - 2 * math.pi
     elif theta < -math.pi:
         theta = 2 * math.pi - theta
     return -theta
-
+    # real_theta = 0.0
+    # if theta > 0:
+    #     real_theta = ROTATION_SPEED
+    # elif theta < 0:
+    #     real_theta = -ROTATION_SPEED
+    # return -real_theta
 
 class Robot(object):
     # FIXME FINE TUNING : Set these optimal speeds

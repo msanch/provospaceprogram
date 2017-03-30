@@ -15,12 +15,15 @@ def _rotation(w1, rotation_matrix):
 
 
 def get_xy_correction(theta, x_coordinate, y_coordinate):
-    original_vector = numpy.matrix(((x_coordinate),
-                                    (y_coordinate),
-                                    (0)))
+    original_vector = numpy.matrix((x_coordinate,
+                                    y_coordinate,
+                                    0)).T
     rotation_matrix = _get_rotation_matrix(-theta)
     rotated_vector = _rotation(original_vector, rotation_matrix)
-    return rotated_vector
+    rotated_list = rotated_vector.tolist()
+    x_rotated = rotated_list[0][0]
+    y_rotated = rotated_list[1][0]
+    return (x_rotated, y_rotated)
 
 
 #
