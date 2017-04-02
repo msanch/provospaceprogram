@@ -2,8 +2,8 @@
 
 import time
 
-import rospy
 from geometry_msgs.msg import Pose2D
+import rospy
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
 
