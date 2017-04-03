@@ -12,12 +12,12 @@ class FakeSerial():
 
 ser = FakeSerial()
 
-def set_debug(debug):
+def initialize(debug, psp_num):
     global ser
     ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=None) if not debug else FakeSerial()
     print "Set PIDS"
     setT(20, 50)
-    set_pids()
+    set_pids(psp_num)
 
 SAMPLE_RATE = 50  # samples per second
 PULSES_PER_ROTATION = 4955  # Old motors
@@ -38,13 +38,19 @@ def setPower(p1, p2, p3):
     writeFloat(p3)
 
 
-def set_pids():
+def set_pids(psp_num):
     """
-    Speed avg 34194.9464 35653.5624 34796.385
+    Robot 1:
+        Speed avg 34194.9464 35653.5624 34796.385
+    Robot 2:
+	Speed avg 370.3572 385.2274 380.7416
     """
-    setPID(1, 1, 5.0, 34194.9464*2)
-    setPID(2, 1, 5.0, 35653.5624*2)
-    setPID(3, 1, 5.0, 34796.385*2)
+    pid_1 = 34194.9464 if psp_num == 1 else 370.3572
+    pid_2 = 35653.5624 if psp_num == 1 else 385.2274
+    pid_3 = 34796.385  if psp_num == 1 else 380.7416
+    setPID(1, 1, 5.0, pid_1)
+    setPID(2, 1, 5.0, pid_2)
+    setPID(3, 1, 5.0, pid_3)
 
 
 def setSpeed(s1, s2, s3):
