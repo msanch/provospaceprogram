@@ -4,9 +4,9 @@ import util
 
 class Tactics():
 
-	def __init__(self, game_state):
-		self.skills = skills.Skills(game_state)
-		self.goal = constants.OPP_GOAL
+	def __init__(self, game_state, is_team_home, is_player1):
+		self.skills = skills.Skills(game_state, is_player1)
+		self.goal = constants.OPP_GOAL if is_team_home else constants.MY_GOAL
 
 	def follow_ball(self, robot_me, ball):
 		self.skills.move_to_xyt(robot_me.start_x(), ball.y, 0)

@@ -21,8 +21,8 @@ class Vision:
 
     _x_min = 90
     _x_max = 740
-    _y_min = 10
-    _y_max = 445
+    _y_min = 20
+    _y_max = 460
 
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39
@@ -53,7 +53,7 @@ class Vision:
         self.estimated_robot_pos = Pose2D()
         self.estimated_ball_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
-        rospy.Subscriber('desired_skills_state', Pose2D, self.receive_desired_pos)
+        rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos)
         rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
         rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
         self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
@@ -94,7 +94,9 @@ class Vision:
             if self.current_range is not None:
                 self.current_range[0] = np.array([max(val-r, m) for val, m, r in zip(hsv_pixel, self.min_hsv, self.range_hsv)])
                 self.current_range[1] = np.array([min(val+r, m) for val, m, r in zip(hsv_pixel, self.max_hsv, self.range_hsv)])
-            print self.current_range
+                print self.current_range
+            else:
+                print self.image_to_world_coordinates(x, y)
 
     def receive_desired_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)

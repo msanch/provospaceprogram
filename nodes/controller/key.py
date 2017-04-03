@@ -53,7 +53,7 @@ class KeyboardController(object):
             elif key == curses.KEY_RIGHT:
                 self.deltas = (self.velocity, 0, 0)
             elif ord('0') <= key <= ord('9'):
-                self.velocity = key - ord('0')
+                self.velocity = (key - ord('0')) / 8.0
             self.stdscr.erase()
             self.stdscr.addstr(0,0,"Hit 'q' to quit")
             self.stdscr.addstr(2, 0, str(self.deltas))

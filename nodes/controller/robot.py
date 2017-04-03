@@ -14,28 +14,33 @@ import wheel
 
 
 def _limit_speed(d_x, limit):
-    result = d_x
+    result = d_x/1.5
     if d_x > 0 and d_x > limit:
         result = limit
     elif d_x < 0 and d_x < -limit:
         result = -limit
     return result
 
-
+# ROTATION_SPEED = math.pi
 def _get_best_rotation(theta):
     if theta > math.pi:
         theta = theta - 2 * math.pi
-    elif theta < math.pi:
+    elif theta < -math.pi:
         theta = 2 * math.pi - theta
-    return theta
-
+    return -theta
+    # real_theta = 0.0
+    # if theta > 0:
+    #     real_theta = ROTATION_SPEED
+    # elif theta < 0:
+    #     real_theta = -ROTATION_SPEED
+    # return -real_theta
 
 class Robot(object):
     # FIXME FINE TUNING : Set these optimal speeds
-    MAX_ROBOT_SPEED = 2.0
-    MIN_ROBOT_SPEED = 1.0
-    CEILING_FLOOR_CUTOFF = 0.1
-    MAXIMUM_ANGULAR_SPEED = math.pi/4
+    MAX_ROBOT_SPEED = 1.0
+    MIN_ROBOT_SPEED = 0.3
+    CEILING_FLOOR_CUTOFF = 0.07
+    MAXIMUM_ANGULAR_SPEED = math.pi/1
 
     def __init__(self, psp_number, velocity=(0, 0), angular_velocity=0,
                  wheels=wheel.get_default_wheel_list(), position=(0, 0),
@@ -75,9 +80,11 @@ class Robot(object):
 
     def _get_velocities(self, d_x, d_y, d_t):
         result = [0, 0, 0]
-        result[0], result[1] = self._smooth_speed(d_x, d_y)
         d_theta = _get_best_rotation(d_t)
         result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
+# FIXME Get corrections for rotating on xy plane
+        corrected_d_x, corrected_d_y = d_x, d_y  # kinematic.get_xy_correction(result[2], d_x, d_y)
+        result[0], result[1] = self._smooth_speed(corrected_d_x, corrected_d_y)
         return result
 
     def _get_wheel_speed_list(self):
@@ -93,22 +100,27 @@ class Robot(object):
         if self.speed_limits[0] < dist < self.speed_limits[1]:
             delta_x /= dist / self.speed_limits[1]
             delta_y /= dist / self.speed_limits[1]
+        elif self.speed_limits[1] < dist < self.speed_limits[2]:
+            delta_x /= 1.5
+            delta_y /= 1.5
         elif self.speed_limits[2] < dist:
             delta_x /= dist / self.speed_limits[2]
             delta_y /= dist / self.speed_limits[2]
         return delta_x, delta_y
 
-    i = 0
+    # i = 0
     def run(self):
         delta_x = (self.current_position[0] - self.desired_position[0])
         delta_y = (self.current_position[1] - self.desired_position[1])
-        delta_theta = (self.current_theta - self.desired_theta)
+        # delta_theta = (self.current_theta - self.desired_theta)
+        delta_theta = (self.desired_theta - self.current_theta)
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
         desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
         # if self.i == 100:
         #     self.i = 0
         #     print "Currrent: ", self.current_position, self.current_theta
         #     print "Desired: ", self.desired_position, self.desired_theta
+        #     print "V List: ", velocity_list
         #     print "Rot/s: ", desired_wheel_velocity_list
         #     print math.sqrt(delta_x**2 + delta_y**2), '\n'
         # self.i += 1

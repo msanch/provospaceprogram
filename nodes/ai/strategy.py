@@ -6,9 +6,9 @@ def enum(**enums):
 
 class Strategy():
 
-	def __init__(self, game_state):
+	def __init__(self, game_state, is_team_home, is_player1):
 		self.strategies = enum(FOLLOW_BALL=0, SIMPLE_STRAT=1)
-		self.tactics = tactics.Tactics(game_state)
+		self.tactics = tactics.Tactics(game_state, is_team_home, is_player1)
 
 	def pick_play(self):
 		return self.strategies.SIMPLE_STRAT
