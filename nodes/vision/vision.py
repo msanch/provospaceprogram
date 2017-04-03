@@ -21,8 +21,8 @@ class Vision:
 
     _x_min = 90
     _x_max = 740
-    _y_min = 10
-    _y_max = 445
+    _y_min = 20
+    _y_max = 460
 
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39

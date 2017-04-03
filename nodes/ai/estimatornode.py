@@ -18,7 +18,7 @@ current_time = time.time()
 frame_delay = 0.0
 i = 0
 
-def low_pass(new_pos, old_pos, alpha=0.0):
+def low_pass(new_pos, old_pos, alpha=0.5):
 	new_pos.x = (1-alpha)*new_pos.x + alpha*old_pos.x
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
@@ -44,7 +44,7 @@ def save_vision_msg(msg):
 	velocity = dirty_derivative(msg, current_pos, time_delta)
 	low_pass(velocity, current_vel)
 	acceleration = dirty_derivative(velocity, current_vel, time_delta)
-	low_pass(acceleration, current_acl)
+	# low_pass(acceleration, current_acl)
 	current_pos = msg
 	current_vel = velocity
 	current_acl = acceleration
