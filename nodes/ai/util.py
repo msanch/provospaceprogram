@@ -33,8 +33,11 @@ def get_angle_from_points(p1, p2):
 def get_angle_diff_from_points(p1, p2, p3):
 	angle_diff1 = get_angle_from_points(p1, p2)
 	angle_diff2 = get_angle_from_points(p2, p3)
-	angle_diff = abs(angle_diff1 - angle_diff2)
-	return angle_diff if angle_diff < 180 else 360 - angle_diff
+	diff = abs(angle_diff1 - angle_diff2)
+	while diff > 2*math.pi: diff -= 2*math.pi
+	while diff < 0: diff += 2*math.pi
+	if diff > math.pi: diff = 2*math.pi - diff
+	return diff
 
 def is_ball_behind(ball, p1):
 	return p1.x > ball.x

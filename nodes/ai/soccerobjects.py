@@ -62,6 +62,9 @@ class Point2D:
 	def is_within_distance_from(self, p, threshold):
 		return self.distance_from(p) < threshold
 
+	def __repr__(self):
+		return "x:{0} y:{1}".format(self.x, self.y)
+
 class Robot:
 
 	def __init__(self, is_player1=True, is_home_team=True):
@@ -104,3 +107,15 @@ class SoccerResetException(Exception):
 
 	def __init__(self, msg=None):
 		self.msg = msg
+
+class WayPoint:
+
+	def__init__(self, pt, validate, update, abort):
+		self.point		= pt
+		self.validate 	= validate
+		self._update 	= update
+		self.abort		= abort
+
+	def update():
+		self.point = self._update()
+

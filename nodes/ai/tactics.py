@@ -1,7 +1,7 @@
 import constants
 import skills
 import util
-
+from soccerobjects import WayPoint
 class Tactics():
 
 	def __init__(self, game_state, is_team_home, is_player1):
@@ -15,27 +15,18 @@ class Tactics():
 		# first check to see if ball is behind you, if so then move to get behind 
 		# print 'get_behind_ball'
 		point = util.get_point_behind_ball(ball, self.goal)
-		is_within_dist = robot_me.location.is_within_distance_from(point, .1)
-		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
-		while not (is_within_dist and angle_diff < constants.MAX_ANGLE_DIFF):
-			self.skills.move_to_point(point, util.get_angle_from_points(robot_me.location, ball))
-			point = util.get_point_behind_ball(ball, self.goal)
-			is_within_dist = robot_me.location.is_within_distance_from(point, .1)
-			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
-			# print is_within_dist, angle_diff
-		# print 'end of get behind ball'
+		def validate_point():
+			angle_diff = util.get_angle_diff_from_points(point, ball, self.goal)
+			return angle_diff < constants.MAX_ANGLE_DIFF
+		def update_point():
+			return util.get_point_behind_ball(ball, self.goal)
+		return WayPoint(point, validate_point, update_point, lambda: False)
 
 	def run_to_goal(self, robot_me, ball):
-		# print 'run_to_goal'
-		dist = robot_me.location.distance_from(ball)
-		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
-		# print dist, angle_diff
-		while dist < constants.POSSESSION_DIST and angle_diff < constants.MAX_ANGLE_DIFF:
-			self.skills.move_to_goal(util.get_angle_from_points(robot_me.location, self.goal), self.goal)
-			dist = robot_me.location.distance_from(ball)
-			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
-			# print dist, angle_diff
-		# print 'end of run to goal'
+		def abort():
+			angle_diff = util.get_angle_diff_from_points(robot_me, ball, self.goal)
+			return angle_diff < constants.MAX_ANGLE_DIFF
+		return WayPoint(self.goal, lambda: True, lambda: self.goal, abort)
 
 	def defend_on_ball_y(self, robot_me, robot_ally, ball):
 		if -0.8 < ball.x < 0.2 and ball.x < robot_ally.location.x:
