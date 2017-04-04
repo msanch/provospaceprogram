@@ -24,8 +24,9 @@ class Tactics():
 
 	def run_to_goal(self, robot_me, ball):
 		def abort():
-			angle_diff = util.get_angle_diff_from_points(robot_me, ball, self.goal)
-			return angle_diff < constants.MAX_ANGLE_DIFF
+			dist = robot_me.location.distance_from(ball)
+			angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, self.goal)
+			return angle_diff > constants.MAX_ANGLE_DIFF or dist > constants.POSSESSION_DIST
 		return WayPoint(self.goal, lambda: True, lambda: self.goal, abort)
 
 	def defend_on_ball_y(self, robot_me, robot_ally, ball):

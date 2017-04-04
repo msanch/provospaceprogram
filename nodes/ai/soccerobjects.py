@@ -110,12 +110,14 @@ class SoccerResetException(Exception):
 
 class WayPoint:
 
-	def__init__(self, pt, validate, update, abort):
+	def __init__(self, pt, validate, update, abort):
 		self.point		= pt
 		self.validate 	= validate
 		self._update 	= update
 		self.abort		= abort
 
-	def update():
+	def update(self):
 		self.point = self._update()
 
+	def __repr__(self):
+		return "x:{0} y:{1}".format(self.point.x, self.point.y)

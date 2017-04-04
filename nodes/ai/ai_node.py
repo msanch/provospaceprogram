@@ -32,6 +32,8 @@ def main():
     rospy.Subscriber('game', GameStateMsg, game_state.update)
 
     coach = strategy.Strategy(game_state, is_team_home, is_player1)
+    way_points = coach.make_play(me, ally, ball)
+    print 'init', way_points
 
     rate = rospy.Rate(100) # 100 Hz
     while not rospy.is_shutdown():
@@ -39,7 +41,11 @@ def main():
             if game_state.reset_field:
                 coach.return_to_start(me)
             elif game_state.play:
-                coach.make_play(me, ally, ball)
+                print 'before', way_points
+                abort = coach.run_play(me, way_points)
+                print 'after', way_points
+                if abort:
+                    way_points = coach.make_play(me, ally, ball)
         except SoccerResetException:
             pass # rospy.loginfo('Game Reset')
         rate.sleep()

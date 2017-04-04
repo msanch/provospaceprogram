@@ -40,7 +40,7 @@
             <param name="is_player1" value="True" type="bool"/>
         </node>
 
-        <node name="ai_node2" pkg="provospaceprogram" type="ai_node.py" output="screen">
+<!--         <node name="ai_node2" pkg="provospaceprogram" type="ai_node.py" output="screen">
             <remap from="me" to="ally2_estimator" />
             <remap from="ally" to="ally1_estimator" />
             <remap from="opp1" to="opp1_estimator" />
@@ -48,6 +48,6 @@
             <remap from="game" to="/game_state" />
             <param name="is_team_home" value="$(eval team_side == 'home')" />
             <param name="is_player1" value="False" type="bool"/>
-        </node>
+        </node> -->
     </group>
 </launch>
