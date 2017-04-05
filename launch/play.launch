@@ -19,15 +19,24 @@
         <node name="vision" pkg="provospaceprogram" type="vision.py" output="screen"/>
 
         <node name="ball_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+            <remap from="game" to="/game_state" />
             <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
             <param name="subscriber_name" value="ball"/>
             <param name="publisher_name" value="ball_estimator"/>
         </node>
 
         <node name="ally1_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+            <remap from="game" to="/game_state" />
             <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
             <param name="subscriber_name" value="ally1"/>
             <param name="publisher_name" value="ally1_estimator"/>
+        </node>
+
+        <node name="ally2_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
+            <remap from="game" to="/game_state" />
+            <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
+            <param name="subscriber_name" value="ally2"/>
+            <param name="publisher_name" value="ally2_estimator"/>
         </node>
 
         <node name="ai_node1" pkg="provospaceprogram" type="ai_node.py" output="screen">
@@ -40,7 +49,7 @@
             <param name="is_player1" value="True" type="bool"/>
         </node>
 
-<!--         <node name="ai_node2" pkg="provospaceprogram" type="ai_node.py" output="screen">
+        <node name="ai_node2" pkg="provospaceprogram" type="ai_node.py" output="screen">
             <remap from="me" to="ally2_estimator" />
             <remap from="ally" to="ally1_estimator" />
             <remap from="opp1" to="opp1_estimator" />
@@ -49,6 +58,6 @@
             <param name="is_team_home" value="$(eval team_side == 'home')" />
             <param name="is_player1" value="False" type="bool"/>
         </node>
- -->
+
     </group>
 </launch>

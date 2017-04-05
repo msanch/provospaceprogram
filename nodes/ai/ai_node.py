@@ -17,7 +17,7 @@ def main():
 
     # Create all soccer objects
     me   = Robot(is_player1=is_player1, is_home_team=is_team_home)
-    ally = Robot(is_player1=is_player1, is_home_team=is_team_home)
+    ally = Robot(is_player1=(not is_player1), is_home_team=is_team_home)
     opp1 = Robot()
     opp2 = Robot()
     ball = Point2D()
@@ -37,7 +37,7 @@ def main():
     while not rospy.is_shutdown():
         try:
             if game_state.reset_field:
-                coach.return_to_start(me)
+                coach.return_to_start(me, is_team_home, game_state)
             elif game_state.play:
                 coach.make_play(me, ally, ball)
         except SoccerResetException:

@@ -63,8 +63,8 @@ class Robot(object):
         self.current_theta = theta
         self.desired_position = position  # (10.0, 0.0)
         self.desired_theta = theta  # math.pi/2 # 3.14159
-        self.wheels[0].set_debug(debug)
-        if debug:
+        self.wheels[0].initialize(debug, psp_number)
+        if not debug:
             desired_topic = "/provospaceprogram_home/desired_skills_state%d" % psp_number if not keyboard else "/psp_keyboard_desired"
             print desired_topic
             current_topic = "/provospaceprogram_home/ally%d_estimator" % psp_number

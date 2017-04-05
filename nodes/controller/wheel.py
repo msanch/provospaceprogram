@@ -37,5 +37,6 @@ class Wheel(object):
         psoc.set_motor_speed(self.wheel_num, speed)
         psoc.spin()
 
-    def set_debug(self, debug):
-        psoc.set_debug(debug)
+    def initialize(self, debug, psp_num):
+        psoc.initialize(debug, psp_num)
+
