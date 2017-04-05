@@ -7,7 +7,7 @@ class Skills:
 
 	def __init__(self, game_state, is_player1):
 		self.game_state = game_state
-		self.pub = rospy.Publisher('desired_skills_state' + '1' if is_player1 else '2', Pose2D, queue_size=10)
+		self.pub = rospy.Publisher('desired_skills_state' + ('1' if is_player1 else '2'), Pose2D, queue_size=10)
 		self.rate = rospy.Rate(ROS_RATE)
 
 	def move_to_goal(self, theta, p):

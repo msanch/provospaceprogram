@@ -1,8 +1,8 @@
 # robot.py
 
 import rospy
+import math
 from soccerref.msg import GameState
-from math import sqrt
 
 class Vector2D:
 
@@ -25,7 +25,7 @@ class Vector2D:
 		return self
 
 	def get_length(self):
-		return sqrt(self.x**2 + self.y**2)
+		return math.sqrt(self.x**2 + self.y**2)
 
 	def set_length(self, length):
 		scale = self.get_length()
@@ -57,7 +57,7 @@ class Point2D:
 		return Point2D(self.x + v.x, self.y + v.y)
 
 	def distance_from(self, p):
-		return sqrt((self.x-p.x)**2 + (self.y-p.y)**2)
+		return math.sqrt((self.x-p.x)**2 + (self.y-p.y)**2)
 
 	def is_within_distance_from(self, p, threshold):
 		return self.distance_from(p) < threshold
@@ -70,8 +70,12 @@ class Robot:
 		self.location = Point2D(0, 0)
 		self.theta = 0
 
-	def start_x(self):
-		return (-0.5 if self.is_player1 else -1.5)
+	def start_pos(self, is_team_home, game_state):
+		side = is_team_home ^ game_state.second_half
+		x = (-0.5 if self.is_player1 else -1.5) * (1 if side else -1)
+		y = 0
+		theta = 0 if side else math.pi
+		return x, y, theta
 
 	def update(self, msg):
 		self.location.update(msg)

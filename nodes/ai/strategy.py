@@ -27,5 +27,5 @@ class Strategy():
 		else:
 			rospy.logerr('UNKOWN PLAY')
 
-	def return_to_start(self, robot_me):
-		self.tactics.return_to_start(robot_me)
+	def return_to_start(self, robot_me, is_team_home, game_state):
+		self.tactics.return_to_start(robot_me, is_team_home, game_state)

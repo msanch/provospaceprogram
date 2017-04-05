@@ -7,7 +7,7 @@ import rospy
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
 
-#FIXME: Check to see if pi needs time.clock()
+# FIXME: Check to see if pi needs time.clock()
 
 is_team_home = True
 game_state = GameState(second_half=False)
@@ -23,6 +23,7 @@ def low_pass(new_pos, old_pos, alpha=0.5):
 	new_pos.y = (1-alpha)*new_pos.y + alpha*old_pos.y
 	new_pos.theta = (1-alpha)*new_pos.theta + alpha*old_pos.theta
 
+
 def dirty_derivative(new_pos, old_pos, time_delta):
 	derivative = Pose2D()
 	derivative.x = (new_pos.x - old_pos.x) / time_delta
@@ -34,7 +35,7 @@ def dirty_derivative(new_pos, old_pos, time_delta):
 def save_vision_msg(msg):
 	global current_pos, current_vel, current_acl, current_time
 	msg_received_time = time.time()
-	if not is_team_home ^ game_state.second_half:
+	if not is_team_home ^ game_state.second_half and False:  # ignore sides
 		msg.x *= -1
 		msg.y *= -1
 		msg.theta += 180
@@ -69,11 +70,6 @@ def main():
 		predict_pos.x = current_pos.x + (current_vel.x * time_jump) + (current_acl.x * time_jump**2)
 		predict_pos.y = current_pos.y + (current_vel.y * time_jump) + (current_acl.y * time_jump**2)
 		predict_pos.theta = current_pos.theta + (current_vel.theta * time_jump) + (current_acl.theta * time_jump**2)
-		# i += 1
-		# if i % 30 == 0:
-		# 	# print current_vel.x, current_vel.x * (predict_time - current_time + frame_delay), '\n'
-		# 	print current_pos.x, predict_pos.x, current_vel.x, time_jump, "\n"
-		# 	i = 0
 		pub.publish(predict_pos)
 		rate.sleep()
 

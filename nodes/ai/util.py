@@ -13,17 +13,17 @@ def get_point_beside_ball(ball, robot_me):
 	return ball.get_offset_point(location_v)
 
 def get_point_behind_ball(ball, p):
-	dist_behind = .40
+	dist_behind = .20
 	location_v = Vector2D.from_points(ball, p)
 	# location_v.y *= 2.5
 	location_v.set_length(dist_behind)
 	location_v.flip()
 	return ball.get_offset_point(location_v)
 
-def get_point_for_def(ball):
-	location_v = Vector2D.from_points(const.MY_GOAL, ball)
+def get_point_for_def(ball, goal):
+	location_v = Vector2D.from_points(goal, ball)
 	location_v.multiply(0.5)
-	return const.MY_GOAL.get_offset_point(location_v)
+	return goal.get_offset_point(location_v)
 
 def get_angle_from_points(p1, p2):
 	dy = p2.y - p1.y
