@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = True
+debug = False
 keyboard = False
 import math
 import sys
