@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-debug = False
+debug = True
 keyboard = False
 import math
 import sys
@@ -12,28 +12,6 @@ else:
 import kinematic
 import wheel
 
-
-def _limit_speed(d_x, limit):
-    result = d_x/1.5
-    if d_x > 0 and d_x > limit:
-        result = limit
-    elif d_x < 0 and d_x < -limit:
-        result = -limit
-    return result
-
-# ROTATION_SPEED = math.pi
-def _get_best_rotation(theta):
-    if theta > math.pi:
-        theta = theta - 2 * math.pi
-    elif theta < -math.pi:
-        theta = 2 * math.pi - theta
-    return -theta
-    # real_theta = 0.0
-    # if theta > 0:
-    #     real_theta = ROTATION_SPEED
-    # elif theta < 0:
-    #     real_theta = -ROTATION_SPEED
-    # return -real_theta
 
 class Robot(object):
     # FIXME FINE TUNING : Set these optimal speeds
@@ -60,6 +38,7 @@ class Robot(object):
         self.desired_position = position  # (10.0, 0.0)
         self.desired_theta = theta  # math.pi/2 # 3.14159
         self.wheels[0].initialize(debug, psp_number)
+        self.kinematic = kinematic.Kinematic(psp_number)
         if not debug:
             desired_topic = "/provospaceprogram_home/desired_skills_state%d" % psp_number if not keyboard else "/psp_keyboard_desired"
             print desired_topic
@@ -80,10 +59,10 @@ class Robot(object):
 
     def _get_velocities(self, d_x, d_y, d_t):
         result = [0, 0, 0]
-        d_theta = _get_best_rotation(d_t)
-        result[2] = _limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
+        d_theta = self._get_best_rotation(d_t)
+        result[2] = self._limit_speed(d_theta, self.MAXIMUM_ANGULAR_SPEED)
 # FIXME Get corrections for rotating on xy plane
-        corrected_d_x, corrected_d_y = d_x, d_y  # kinematic.get_xy_correction(result[2], d_x, d_y)
+        corrected_d_x, corrected_d_y = d_x, d_y  # self.kinematic.get_xy_correction(result[2], d_x, d_y)
         result[0], result[1] = self._smooth_speed(corrected_d_x, corrected_d_y)
         return result
 
@@ -94,6 +73,29 @@ class Robot(object):
             result.append(speed)
         return result
 
+    @staticmethod
+    def _limit_speed(d_x, limit):
+        result = d_x/1.5
+        if d_x > 0 and d_x > limit:
+            result = limit
+        elif d_x < 0 and d_x < -limit:
+            result = -limit
+        return result
+
+    # ROTATION_SPEED = math.pi
+    @staticmethod
+    def _get_best_rotation(theta):
+        if theta > math.pi:
+            theta = theta - 2 * math.pi
+        elif theta < -math.pi:
+            theta = 2 * math.pi - theta
+        return -theta
+        # real_theta = 0.0
+        # if theta > 0:
+        #     real_theta = ROTATION_SPEED
+        # elif theta < 0:
+        #     real_theta = -ROTATION_SPEED
+        # return -real_theta
 
     def _smooth_speed(self, delta_x, delta_y):
         dist = math.sqrt(delta_x**2 + delta_y**2)
@@ -115,7 +117,7 @@ class Robot(object):
         # delta_theta = (self.current_theta - self.desired_theta)
         delta_theta = (self.desired_theta - self.current_theta)
         velocity_list = self._get_velocities(delta_x, delta_y, delta_theta)
-        desired_wheel_velocity_list = kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
+        desired_wheel_velocity_list = self.kinematic.get_desired_wheel_speeds(self.current_theta, velocity_list)
         # if self.i == 100:
         #     self.i = 0
         #     print "Currrent: ", self.current_position, self.current_theta
