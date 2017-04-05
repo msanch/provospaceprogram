@@ -2,11 +2,11 @@ import numpy
 
 
 def _get_rotation_matrix(theta):
-    matrix = [
-        [numpy.cos(theta), numpy.sin(theta), 0],
-        [-1 * numpy.sin(theta), numpy.cos(theta), 0],
-        [0, 0, 1]
-    ]
+    matrix = (
+        (numpy.cos(theta), numpy.sin(theta), 0),
+        (-1 * numpy.sin(theta), numpy.cos(theta), 0),
+        (0, 0, 1)
+    )
     return numpy.matrix(matrix)
 
 
@@ -41,13 +41,13 @@ WHEEL_DISTANCE_FROM_CENTER = 0.073
 
 
 def _get_center_of_robot_to_wheel_vectors():
-    result = [
+    result = (
         (-WHEEL_DISTANCE_FROM_CENTER, 0, 0),
         (WHEEL_DISTANCE_FROM_CENTER  * numpy.cos(-60*numpy.pi/180),
             WHEEL_DISTANCE_FROM_CENTER * numpy.sin(-60*numpy.pi/180), 0),
         (WHEEL_DISTANCE_FROM_CENTER * numpy.cos(60*numpy.pi/180),
             WHEEL_DISTANCE_FROM_CENTER * numpy.sin(60*numpy.pi/180), 0)
-    ]
+    )
     return numpy.matrix(result)
 
 
@@ -75,17 +75,17 @@ def get_wheel_spin_vector(theta):
     theta : robot body
     wheel_spin_direction : [-2.3,0,1.5] - 3 elements for each
                            wheel. Rotation/sec
-    return wheel_spin_direction : [(x,y,0), (x,y,0), (x,y,0)]
+    return wheel_spin_direction : matrix((x,y,0), (x,y,0), (x,y,0))
     where x,y are functions of the robot theta and wheel direction
     """
     r = _get_center_of_robot_to_wheel_vectors()
     s = _create_speed_matrix(theta)
-    wheel_list_matrix = [
+    wheel_tupple_matrix = (
         (s[0][0], s[0][1], s[0][1] * r[0].T[0] - (s[0][0] * r[0].T[1])),
         (s[1][0], s[1][1], s[1][1] * r[1].T[0] - (s[1][0] * r[1].T[1])),
         (s[2][0], s[2][1], s[2][1] * r[2].T[0] - (s[2][0] * r[2].T[1]))
-    ]
-    wheel_matrix = numpy.matrix(wheel_list_matrix)
+    )
+    wheel_matrix = numpy.matrix(wheel_tupple_matrix)
     return wheel_matrix
 
 
@@ -153,3 +153,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
