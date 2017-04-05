@@ -51,7 +51,7 @@ def _get_center_of_robot_to_wheel_vectors():
     return numpy.matrix(result)
 
 
-def _create_speed_matrix(theta):
+def _create_speed_matrix():
     """
     (
         (x,y)
@@ -70,16 +70,15 @@ RADIUS_OF_WHEELS = 0.030
 RHO = RADIUS_OF_WHEELS
 
 
-def get_wheel_spin_vector(theta):
+def get_wheel_spin_vector():
     """
-    theta : robot body
     wheel_spin_direction : [-2.3,0,1.5] - 3 elements for each
                            wheel. Rotation/sec
     return wheel_spin_direction : matrix((x,y,0), (x,y,0), (x,y,0))
     where x,y are functions of the robot theta and wheel direction
     """
     r = _get_center_of_robot_to_wheel_vectors()
-    s = _create_speed_matrix(theta)
+    s = _create_speed_matrix()
     wheel_tupple_matrix = (
         (s[0][0], s[0][1], s[0][1] * r[0].T[0] - (s[0][0] * r[0].T[1])),
         (s[1][0], s[1][1], s[1][1] * r[1].T[0] - (s[1][0] * r[1].T[1])),
@@ -89,15 +88,14 @@ def get_wheel_spin_vector(theta):
     return wheel_matrix
 
 
-def _get_M(theta):
+def _get_M():
     """
     given:
         RHO - Wheel size - CONSTANT - Float?
         R_VECTOR - Location of wheels on body - matrix
-    theta : robot degree turned
     wheel_speed_list : list of wheel speeds in rotations/sec
     """
-    s = get_wheel_spin_vector(theta)
+    s = get_wheel_spin_vector()
     result = (1 / RHO) * s
     return result
 
@@ -124,7 +122,7 @@ def get_desired_wheel_speeds(theta, desired_velocities):
     desired_velocities : (vx,vy,omega)
     return : [omega, omega, omega] : rotations / second
     """
-    m = _get_M(theta)
+    m = _get_M()
     r = _get_rotation_matrix(theta)
     desired_velocities_matrix = numpy.matrix(desired_velocities).T
     matrix_result = m * r * desired_velocities_matrix
