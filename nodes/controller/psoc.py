@@ -1,5 +1,6 @@
-import serial
 import struct
+
+import serial
 
 
 class FakeSerial():
@@ -34,9 +35,9 @@ class PSoC():
         pid_1 = 34194.9464 if psp_num == 1 else 370.3572
         pid_2 = 35653.5624 if psp_num == 1 else 385.2274
         pid_3 = 34796.385  if psp_num == 1 else 380.7416
-        self.set_pid(1, 1, 5.0, pid_1)
-        self.set_pid(2, 1, 5.0, pid_2)
-        self.set_pid(3, 1, 5.0, pid_3)
+        self.set_pid(1, 1, 5.0, pid_1*2)
+        self.set_pid(2, 1, 5.0, pid_2*2)
+        self.set_pid(3, 1, 5.0, pid_3*2)
 
     def set_power(self, p1, p2, p3):
         self.ser.write('p')
@@ -62,18 +63,13 @@ class PSoC():
         self.write_float(period_ms)
         self.write_float(tau_ms)
 
-    def get_speed(self, wheel_num=0):
+    def get_speed(self):
         """
-        wheel_num : default value of 0, if 1-3 it will return that motors value
-        return : list with either all three values in it or the desired value
+        return : tuple of wheel speeds
         """
         self.ser.write('v')
-        wheel = [None, None, None, None]
-        self.wheel[1] = (self.read_float())
-        self.wheel[2] = (self.read_float())
-        self.wheel[3] = (self.read_float())
-        self.wheel[0] = (wheel[1][0], wheel[2][0], wheel[3][0])
-        return wheel[wheel_num]
+        result = (self.read_float(), self.read_float(), self.read_float())
+        return result
 
     def get_encoder_count(self):
         self.ser.write('e')
@@ -81,3 +77,4 @@ class PSoC():
 
     def disengage(self):
         self.ser.write('d')
+

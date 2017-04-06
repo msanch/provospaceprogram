@@ -48,9 +48,6 @@ class Kinematic():
     #          2 /   \ 3
     #           /     \
     # Front(b/c a kicker could go here)
-    # TODO Keep this function, but use it to generate a constant, then use that
-    # hard-coded constant
-
     def __get_center_of_robot_to_wheel_vectors(self):
         """Called at init to prevent processing everytime"""
         result = (
@@ -98,7 +95,7 @@ class Kinematic():
     RADIUS_OF_WHEELS = 0.030
     RHO = RADIUS_OF_WHEELS
 
-    def _get_M(self):
+    def _get_m(self):
         """
         given:
             RHO - Wheel size - CONSTANT - Float?
@@ -134,7 +131,7 @@ class Kinematic():
         desired_velocities : (vx,vy,omega)
         return : [omega, omega, omega] : rotations / second
         """
-        m = self._get_M()
+        m = self._get_m()
         r = self._get_rotation_matrix(theta)
         desired_velocities_matrix = numpy.matrix(desired_velocities).T
         matrix_result = m * r * desired_velocities_matrix
@@ -165,3 +162,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
