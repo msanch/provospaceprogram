@@ -1,1 +1,1 @@
-rostopic pub /game_state soccerref/GameState 0 0 1 1 60 True True False
+rostopic pub /game_state soccerref/GameState 0 0 1 1 60 True True False False False
