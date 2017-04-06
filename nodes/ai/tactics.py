@@ -6,8 +6,8 @@ class Tactics():
 
 	def __init__(self, game_state, is_team_home, is_player1):
 		self.skills = skills.Skills(game_state, is_player1)
-		self.goal = lambda: constants.OPP_GOAL if is_team_home ^ game_state.second_half else constants.MY_GOAL
-		self.my_goal = lambda: constants.OPP_GOAL if not (is_team_home ^ game_state.second_half) else constants.MY_GOAL
+		self.goal = lambda: constants.OPP_GOAL if is_team_home ^ game_state.second_half or True else constants.MY_GOAL
+		self.my_goal = lambda: constants.OPP_GOAL if not (is_team_home ^ game_state.second_half) or True else constants.MY_GOAL
 
 	def follow_ball(self, robot_me, ball):
 		self.skills.move_to_xyt(robot_me.start_x(), ball.y, 0)

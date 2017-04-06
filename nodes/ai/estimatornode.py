@@ -6,6 +6,7 @@ from geometry_msgs.msg import Pose2D
 import rospy
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
+import math
 
 # FIXME: Check to see if pi needs time.clock()
 
@@ -35,11 +36,11 @@ def dirty_derivative(new_pos, old_pos, time_delta):
 def save_vision_msg(msg):
 	global current_pos, current_vel, current_acl, current_time
 	msg_received_time = time.time()
-	if not is_team_home ^ game_state.second_half and False:  # ignore sides
+	if not is_team_home ^ game_state.second_half:  # ignore sides
 		msg.x *= -1
 		msg.y *= -1
-		msg.theta += 180
-		msg.theta %= 360
+		msg.theta += math.pi
+	msg.theta %= 2*math.pi
 	low_pass(msg, current_pos)
 	time_delta = msg_received_time - current_time
 	velocity = dirty_derivative(msg, current_pos, time_delta)

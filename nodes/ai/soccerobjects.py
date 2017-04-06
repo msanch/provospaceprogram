@@ -72,9 +72,9 @@ class Robot:
 
 	def start_pos(self, is_team_home, game_state):
 		side = is_team_home ^ game_state.second_half
-		x = (-0.5 if self.is_player1 else -1.5) * (1 if side else -1)
+		x = (-0.5 if self.is_player1 else -1.5) * (1 if side or True else -1)
 		y = 0
-		theta = 0 if side else math.pi
+		theta = 0 if side or True else math.pi
 		return x, y, theta
 
 	def update(self, msg):
