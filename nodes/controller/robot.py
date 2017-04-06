@@ -10,7 +10,7 @@ else:
     from geometry_msgs.msg import Pose2D
 
 import kinematic
-import wheel
+from psoc import PSoC
 
 
 class Robot(object):
@@ -21,23 +21,20 @@ class Robot(object):
     MAXIMUM_ANGULAR_SPEED = math.pi/1
 
     def __init__(self, psp_number, velocity=(0, 0), angular_velocity=0,
-                 wheels=wheel.get_default_wheel_list(), position=(0, 0),
+                 psoc=PSoC, position=(0, 0),
                  theta=0):
         """
-        wheels : [Wheel(), Wheel(), Wheel()]
+        :param psoc: class that follows the PSoC interface
         """
         self.psp_number = psp_number
         self.speed_limits = (self.CEILING_FLOOR_CUTOFF, self.MIN_ROBOT_SPEED, self.MAX_ROBOT_SPEED)
         self.velocity = velocity
         self.angular_velocity = angular_velocity  # omega, w
-        if len(wheels) != 3:
-            raise ValueError("Three wheels not initialzied")
-        self.wheels = wheels
+        self.psoc = psoc(debug, psp_number)
         self.current_position = position
         self.current_theta = theta
         self.desired_position = position  # (10.0, 0.0)
         self.desired_theta = theta  # math.pi/2 # 3.14159
-        self.wheels[0].initialize(debug, psp_number)
         self.kinematic = kinematic.Kinematic(psp_number)
         if not debug:
             desired_topic = "/provospaceprogram_home/desired_skills_state%d" % psp_number if not keyboard else "/psp_keyboard_desired"
@@ -64,13 +61,6 @@ class Robot(object):
 # FIXME Get corrections for rotating on xy plane
         corrected_d_x, corrected_d_y = d_x, d_y  # self.kinematic.get_xy_correction(result[2], d_x, d_y)
         result[0], result[1] = self._smooth_speed(corrected_d_x, corrected_d_y)
-        return result
-
-    def _get_wheel_speed_list(self):
-        result = []
-        for wheel_ in self.wheels:
-            speed = wheel_.get_speed()
-            result.append(speed)
         return result
 
     @staticmethod
@@ -126,7 +116,11 @@ class Robot(object):
         #     print "Rot/s: ", desired_wheel_velocity_list
         #     print math.sqrt(delta_x**2 + delta_y**2), '\n'
         # self.i += 1
-        wheel.set_motor_speed(desired_wheel_velocity_list)
+        self.psoc.set_motor_speeds(desired_wheel_velocity_list)
+
+    def stop(self):
+        self.psoc.disengage()
+
 
 def main():
     print "Starting Robot Controller Node"
@@ -145,10 +139,9 @@ def main():
             else:
                 rate.sleep()
     except KeyboardInterrupt:
-        pass
-    wheel.power_off()
+        print "Shutting down"
+    robot.stop()
 
 
 if __name__ == "__main__":
     main()
-
