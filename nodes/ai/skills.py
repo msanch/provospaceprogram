@@ -1,5 +1,5 @@
 import rospy
-from constants import ROS_RATE, OPP_GOAL
+from constants import ROS_RATE
 from geometry_msgs.msg import Pose2D
 from soccerobjects import SoccerResetException
 

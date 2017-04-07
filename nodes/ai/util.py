@@ -1,12 +1,11 @@
 # util.py
 
-import constants as const
 import math
-from soccerobjects import Vector2D
+from soccerobjects import Vector2D, OPP_GOAL, MY_GOAL
 
 def get_point_beside_ball(ball, robot_me):
 	dist_beside = .20
-	location_v = Vector2D.from_points(ball, const.OPP_GOAL)
+	location_v = Vector2D.from_points(ball, OPP_GOAL)
 	# TODO: get a good point on the side
 	location_v.set_length(dist_beside)
 	location_v.flip()
@@ -21,9 +20,9 @@ def get_point_behind_ball(ball, p):
 	return ball.get_offset_point(location_v)
 
 def get_point_for_def(ball):
-	location_v = Vector2D.from_points(const.MY_GOAL, ball)
+	location_v = Vector2D.from_points(MY_GOAL, ball)
 	location_v.multiply(0.5)
-	return const.MY_GOAL.get_offset_point(location_v)
+	return MY_GOAL.get_offset_point(location_v)
 
 def get_angle_from_points(p1, p2):
 	dy = p2.y - p1.y

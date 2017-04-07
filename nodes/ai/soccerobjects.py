@@ -1,6 +1,7 @@
 # robot.py
 
 import rospy
+import constants
 from soccerref.msg import GameState
 from math import sqrt
 
@@ -68,6 +69,10 @@ class Point2D:
 	def __repr__(self):
 		return "Point2D: x={0}, y={1}".format(self.x, self.y)
 
+# Standard Points
+OPP_GOAL = Point2D(x=1.66, y=0)
+MY_GOAL  = Point2D(x=-1.66, y=0)
+
 class Robot:
 
 	def __init__(self, is_player1=True, is_home_team=True):
@@ -113,22 +118,34 @@ class SoccerResetException(Exception):
 
 class Avoidance:
 
-	def __init__(self, radius=0.3, *obstacles):
+	def __init__(self, *obstacles):
 		self.x_unit = Vector2D()
 		self.y_unit = Vector2D()
+		self.x_unit_inv = Vector2D()
+		self.y_unit_inv = Vector2D()
 		self.origin = Point2D()
 		self.obstacles = obstacles
-		self.transformed_obstacles = (Point2D() for _ in range(len(self.obstacles)))
-		self.radius = radius
+		self.transformed_obstacles = tuple(Point2D() for _ in range(len(self.obstacles)))
+		self.obj_radius = constants.OBJ_RADIUS
 
 	def __set_transform(self, start, end):
 		self.origin.update(start)
 		self.x_unit.x = end.x - start.x
 		self.x_unit.y = end.y - start.y
-		self.y_unit.x = self.x_unit.y
-		self.y_unit.y = -self.x_unit.x
+		self.y_unit.x = -self.x_unit.y
+		self.y_unit.y = self.x_unit.x
 		self.x_unit.set_length(1)
 		self.y_unit.set_length(1)
+
+	def __calculate_inv_transform(self):
+		self.x_unit_inv.x = self.y_unit.y
+		self.x_unit_inv.y = -self.x_unit.y
+		self.y_unit_inv.x = -self.y_unit.x
+		self.y_unit_inv.y = self.x_unit.x
+		determinant = (self.x_unit.x*self.y_unit.y) - (self.x_unit.y*self.y_unit.x)
+		if determinant != 0:
+			self.x_unit_inv.multiply(float(1)/determinant)
+			self.y_unit_inv.multiply(float(1)/determinant)
 
 	def __transform_xy(self, x, y):
 		# translate
@@ -139,18 +156,43 @@ class Avoidance:
 		new_y = (x*self.y_unit.x) + (y*self.y_unit.y)
 		return new_x, new_y
 
+	def __inv_transform_xy(self, x, y):
+		# rotate
+		new_x = (x*self.x_unit_inv.x) + (y*self.x_unit_inv.y)
+		new_y = (x*self.y_unit_inv.x) + (y*self.y_unit_inv.y)
+		# translate
+		new_x += self.origin.x
+		new_y += self.origin.y
+		return new_x, new_y
+
+	def __transform_point(self, p):
+		p.x, p.y = self.__transform_xy(p.x, p.y)
+
+	def __inv_transform_point(self, p):
+		p.x, p.y = self.__inv_transform_xy(p.x, p.y)
+
 	def __transform_obstacles(self):
-		for ob, tr_ob in zip(self.obstacles, self.transformed_obstacles):
-			tr_ob.x, tr_ob.y = self.__transform_xy(ob.x, ob.y)
+		for obj, tobj in zip(self.obstacles, self.transformed_obstacles):
+			tobj.x, tobj.y = self.__transform_xy(obj.x, obj.y)
 
 	def avoid(self, start, end, avoid_ball):
-		self.__set_transform(start, end)
+		avoid_end = Point2D()
+		avoid_end.update(end)
+		self.__set_transform(start, avoid_end)
+		self.__calculate_inv_transform()
 		self.__transform_obstacles()
-
-		print('before', start, end)
-		print('after', self.__transform_xy(start.x, start.y), self.__transform_xy(end.x, end.y))
+		self.__transform_point(avoid_end)
 
 		closest_obstacle = None
-		for tr_ob in self.transformed_obstacles:
-			if 0 < tr_ob.x < 10:
-				pass
+		for tobj in self.transformed_obstacles:
+			if 0 < tobj.x < avoid_end.x and abs(tobj.y) < self.obj_radius and \
+				(not closest_obstacle or tobj.x < closest_obstacle.x):
+					closest_obstacle = tobj
+
+		if closest_obstacle:
+			overlap = (self.obj_radius - abs(closest_obstacle.y)) * (1 if closest_obstacle.y < 0 else -1)
+			dy = overlap * avoid_end.x / closest_obstacle.x
+			avoid_end.y += dy
+
+		self.__inv_transform_point(avoid_end)
+		return avoid_end
