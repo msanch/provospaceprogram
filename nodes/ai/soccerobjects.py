@@ -41,6 +41,9 @@ class Vector2D:
 	def flip(self):
 		self.multiply(-1)
 
+	def __repr__(self):
+		return "Vector2D: x={0}, y={1}".format(self.x, self.y)
+
 
 class Point2D:
 
@@ -61,6 +64,9 @@ class Point2D:
 
 	def is_within_distance_from(self, p, threshold):
 		return self.distance_from(p) < threshold
+
+	def __repr__(self):
+		return "Point2D: x={0}, y={1}".format(self.x, self.y)
 
 class Robot:
 
@@ -104,3 +110,47 @@ class SoccerResetException(Exception):
 
 	def __init__(self, msg=None):
 		self.msg = msg
+
+class Avoidance:
+
+	def __init__(self, radius=0.3, *obstacles):
+		self.x_unit = Vector2D()
+		self.y_unit = Vector2D()
+		self.origin = Point2D()
+		self.obstacles = obstacles
+		self.transformed_obstacles = (Point2D() for _ in range(len(self.obstacles)))
+		self.radius = radius
+
+	def __set_transform(self, start, end):
+		self.origin.update(start)
+		self.x_unit.x = end.x - start.x
+		self.x_unit.y = end.y - start.y
+		self.y_unit.x = self.x_unit.y
+		self.y_unit.y = -self.x_unit.x
+		self.x_unit.set_length(1)
+		self.y_unit.set_length(1)
+
+	def __transform_xy(self, x, y):
+		# translate
+		x -= self.origin.x
+		y -= self.origin.y
+		# rotate
+		new_x = (x*self.x_unit.x) + (y*self.x_unit.y)
+		new_y = (x*self.y_unit.x) + (y*self.y_unit.y)
+		return new_x, new_y
+
+	def __transform_obstacles(self):
+		for ob, tr_ob in zip(self.obstacles, self.transformed_obstacles):
+			tr_ob.x, tr_ob.y = self.__transform_xy(ob.x, ob.y)
+
+	def avoid(self, start, end, avoid_ball):
+		self.__set_transform(start, end)
+		self.__transform_obstacles()
+
+		print('before', start, end)
+		print('after', self.__transform_xy(start.x, start.y), self.__transform_xy(end.x, end.y))
+
+		closest_obstacle = None
+		for tr_ob in self.transformed_obstacles:
+			if 0 < tr_ob.x < 10:
+				pass
