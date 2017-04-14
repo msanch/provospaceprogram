@@ -20,23 +20,23 @@
 
         <node name="ball_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
             <remap from="game" to="/game_state" />
+            <remap from="subscriber" to="ball"/>
+            <remap from="publisher" to="ball_estimator"/>
             <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
-            <param name="subscriber_name" value="ball"/>
-            <param name="publisher_name" value="ball_estimator"/>
         </node>
 
         <node name="ally1_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
             <remap from="game" to="/game_state" />
+            <remap from="subscriber" to="ally1"/>
+            <remap from="publisher" to="ally1_estimator"/>
             <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
-            <param name="subscriber_name" value="ally1"/>
-            <param name="publisher_name" value="ally1_estimator"/>
         </node>
 
         <node name="ally2_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
             <remap from="game" to="/game_state" />
+            <remap from="subscriber" to="ally2"/>
+            <remap from="publisher" to="ally2_estimator"/>
             <param name="is_team_home" value="$(eval team_side == 'home')" type="bool"/>
-            <param name="subscriber_name" value="ally2"/>
-            <param name="publisher_name" value="ally2_estimator"/>
         </node>
 
         <node name="ai_node1" pkg="provospaceprogram" type="ai_node.py" output="screen">

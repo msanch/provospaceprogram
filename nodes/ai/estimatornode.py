@@ -8,7 +8,7 @@ import math
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
 
-#FIXME: Check to see if pi needs time.clock()
+# FIXME: Check to see if pi needs time.clock()
 
 is_team_home = True
 game_state = GameState(second_half=False)
@@ -56,10 +56,8 @@ def main():
 	global is_team_home, i
 	rospy.init_node('psp_estimator', anonymous=False)
 	is_team_home = rospy.get_param('~is_team_home')
-	subscriber_name = rospy.get_param('~subscriber_name')
-	publisher_name = rospy.get_param('~publisher_name')
-	pub = rospy.Publisher(publisher_name, Pose2D, queue_size=10)
-	rospy.Subscriber(subscriber_name, Pose2D, save_vision_msg)
+	pub = rospy.Publisher('publisher', Pose2D, queue_size=10)
+	rospy.Subscriber('subscriber', Pose2D, save_vision_msg)
 	rospy.Subscriber('game', GameStateMsg, game_state.update)
 
 	rate = rospy.Rate(50) # 50 Hz, 20 ms

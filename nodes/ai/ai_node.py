@@ -17,7 +17,7 @@ def main():
 
     # Create all soccer objects
     me   = Robot(is_player1=is_player1, is_home_team=is_team_home)
-    ally = Robot(is_player1=is_player1, is_home_team=is_team_home)
+    ally = Robot(is_player1=(not is_player1), is_home_team=is_team_home)
     opp1 = Robot()
     opp2 = Robot()
     ball = Point2D()
