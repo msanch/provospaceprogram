@@ -19,10 +19,10 @@ import ipdb
 
 class Vision:
 
-    _x_min = 90
-    _x_max = 740
-    _y_min = 20
-    _y_max = 460
+    _x_min = 85
+    _x_max = 730
+    _y_min = 5
+    _y_max = 440
 
     _FIELD_WIDTH  = 3.53
     _FIELD_HEIGHT = 2.39
@@ -152,7 +152,7 @@ class Vision:
         contour_moments = []
         for contour in contours:
             mm = cv2.moments(contour)
-            if mm['m00'] > 0:
+            if 10 < mm['m00'] < 100:
                 contour_moments.append(mm)
 
         if len(contour_moments) < 1:

@@ -1,12 +1,29 @@
 import matplotlib.pyplot as plt
 from soccerobjects import Point2D, Vector2D, Avoidance
 
+# obstacles = [
+	# Point2D(-2, -0.1),
+	# Point2D(-1, 0.18),
+	# Point2D(0, 0),
+	# Point2D(1, -0.3)
+# 			]
+# obstacles = [
+	# Point2D(-2, -0.1),
+	# Point2D(-1, 0.12),
+	# Point2D(0, 0.1),
+	# Point2D(1, -0.2)
+# 			]
 obstacles = [
-				Point2D(-2, -0.1),
-				Point2D(-1, 0.18),
-				Point2D(0, 0),
-				Point2D(1, -0.3)
-			]
+	Point2D(-0.4, -0.4),
+	Point2D(-0.3, -0.3),
+	Point2D(-0.2, -0.2),
+	Point2D(-0.1, -0.1),
+	Point2D( 0.0,  0.0),
+	Point2D( 0.1,  0.1),
+	Point2D( 0.2,  0.2),
+	Point2D( 0.3,  0.3),
+	Point2D( 0.4,  0.4)
+]
 # obstacles = [Point2D(-2, 0.1), Point2D(-2.01, -0.25)]
 a = Avoidance(*obstacles)
 current = Point2D(-2.9, 0)
