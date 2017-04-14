@@ -35,6 +35,11 @@ class Vision:
         np.array([50, 255, 255])
     ]
 
+    ally2_range = [
+        np.array([30, 10, 100]),
+        np.array([50, 255, 255])
+    ]
+
     ball_range = [ # blue
         np.array([73, 4, 215]),
         np.array([113, 44, 255])
@@ -49,15 +54,18 @@ class Vision:
 
     def __init__(self):
         self.bridge = CvBridge()
-        self.desired_pos = Pose2D()
+        self.desired_pos1 = Pose2D()
+        self.desired_pos2 = Pose2D()
         self.estimated_robot_pos = Pose2D()
         self.estimated_ball_pos = Pose2D()
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
-        rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos)
+        rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos1)
+        rospy.Subscriber('desired_skills_state2', Pose2D, self.receive_desired_pos2)
         rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
         rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
-        self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
         self.ball_pub = rospy.Publisher('ball', Pose2D, queue_size=10)
+        self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
+        self.ally2_pub = rospy.Publisher('ally2', Pose2D, queue_size=10)
         self.frame_time = 0
 
     def image_to_world_coordinates(self, x, y):
@@ -98,9 +106,13 @@ class Vision:
             else:
                 print self.image_to_world_coordinates(x, y)
 
-    def receive_desired_pos(self, msg):
+    def receive_desired_pos1(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
-        self.desired_pos = msg
+        self.desired_pos1 = msg
+
+    def receive_desired_pos2(self, msg):
+        msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
+        self.desired_pos2 = msg
 
     def receive_estimated_robot_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
@@ -119,17 +131,18 @@ class Vision:
         self.bgr_image = np.array([np.array(row[self._x_min:self._x_max+1]) for row in self.bgr_image[self._y_min:self._y_max+1]])
         self.hsv_image = cv2.cvtColor(self.bgr_image, cv2.COLOR_BGR2HSV)
         self.process_ball('Ball', self.ball_range, self.ball_pub)
-        x, y, a = self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
-        self.draw_rectangle(self.desired_pos.x, self.desired_pos.y, self.bgr_image, color=(0,0,255))
+        self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
+        self.process_robot('Ally 2', self.ally2_range, self.ally2_pub)
+        
+        self.draw_rectangle(self.desired_pos1.x, self.desired_pos1.y, self.bgr_image, color=(0,0,255))
+        self.draw_rectangle(self.desired_pos2.x, self.desired_pos2.y, self.bgr_image, color=(0,0,255))
         self.draw_rectangle(self.estimated_robot_pos.x, self.estimated_robot_pos.y, self.bgr_image, color=(255,0,0))
         self.draw_rectangle(self.estimated_ball_pos.x, self.estimated_ball_pos.y, self.bgr_image, color=(255,0,0))
         cv2.imshow(window_name, self.bgr_image)
         cv2.setMouseCallback(window_name, self.calibration_callback)
         char = cv2.waitKey(1)
         if char != -1:
-            # print x, y, a
             self.set_current_range(char)
-        # print 'Time for processing', datetime.datetime.now().time().microsecond - processing_time
 
     def calibrate_parameter(self, color_range, index_1, index_2, r, m, new_value):
         color_range[index_1][index_2] = new_value
@@ -139,6 +152,8 @@ class Vision:
             self.current_range = self.ball_range
         elif char == ord('1'):
             self.current_range = self.ally1_range
+        elif char == ord('2'):
+            self.current_range = self.ally2_range
         else:
             self.current_range = None
 

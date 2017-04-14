@@ -4,6 +4,7 @@ import time
 
 from geometry_msgs.msg import Pose2D
 import rospy
+import math
 from soccerref.msg import GameState as GameStateMsg
 from soccerobjects import GameState
 
@@ -37,8 +38,8 @@ def save_vision_msg(msg):
 	if not is_team_home ^ game_state.second_half:
 		msg.x *= -1
 		msg.y *= -1
-		msg.theta += 180
-		msg.theta %= 360
+		msg.theta += math.pi
+	msg.theta %= 2*math.pi
 	low_pass(msg, current_pos)
 	time_delta = msg_received_time - current_time
 	velocity = dirty_derivative(msg, current_pos, time_delta)
