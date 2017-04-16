@@ -2,7 +2,6 @@
 
 import rospy
 import constants
-from soccerref.msg import GameState
 from math import sqrt
 
 class Vector2D:
@@ -75,9 +74,8 @@ MY_GOAL  = Point2D(x=-1.66, y=0)
 
 class Robot:
 
-	def __init__(self, is_player1=True, is_home_team=True):
+	def __init__(self, is_player1=True):
 		self.is_player1 = is_player1
-		self.is_home_team = is_home_team
 		self.location = Point2D(0, 0)
 		self.theta = 0
 
@@ -175,7 +173,7 @@ class Avoidance:
 		for obj, tobj in zip(self.obstacles, self.transformed_obstacles):
 			tobj.x, tobj.y = self.__transform_xy(obj.x, obj.y)
 
-	def avoid(self, start, end, avoid_ball):
+	def avoid(self, start, end):
 		avoid_end = Point2D()
 		avoid_end.update(end)
 		self.__set_transform(start, avoid_end)

@@ -12,12 +12,11 @@ def main():
     rospy.init_node('ai', anonymous=False)
 
     # Get params
-    is_team_home = True  # rospy.get_param('~is_team_home')
     is_player1 = rospy.get_param('~is_player1')
 
     # Create all soccer objects
-    me   = Robot(is_player1=is_player1, is_home_team=is_team_home)
-    ally = Robot(is_player1=(not is_player1), is_home_team=is_team_home)
+    me   = Robot(is_player1=is_player1)
+    ally = Robot(is_player1=(not is_player1))
     opp1 = Robot()
     opp2 = Robot()
     ball = Point2D()
@@ -31,7 +30,7 @@ def main():
     rospy.Subscriber('opp2', Pose2D, opp2.update)
     rospy.Subscriber('game', GameStateMsg, game_state.update)
 
-    coach = strategy.Strategy(game_state, is_team_home, is_player1)
+    coach = strategy.Strategy(game_state, is_player1)
 
     rate = rospy.Rate(100) # 100 Hz
     while not rospy.is_shutdown():
@@ -41,7 +40,7 @@ def main():
             elif game_state.play:
                 coach.make_play(me, ally, ball)
         except SoccerResetException:
-            pass # rospy.loginfo('Game Reset')
+            pass
         rate.sleep()
 
 

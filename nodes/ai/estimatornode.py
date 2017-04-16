@@ -16,7 +16,7 @@ current_pos = Pose2D()
 current_vel = Pose2D()
 current_acl = Pose2D()
 current_time = time.time()
-frame_delay = 0.0
+frame_delay = 0.1
 i = 0
 
 def low_pass(new_pos, old_pos, alpha=0.5):

@@ -11,12 +11,15 @@
     <arg name="kick_ally1" default="kick" />
     <arg name="kick_ally2" default="kick" /> -->
 
-    <group ns="provospaceprogram_$(arg team_side)">
+    <group ns="provospaceprogram_home">
 
         <!-- Set ROS parameters that the code can access -->
         <param name="team_side" type="string" value="$(arg team_side)"/>
 
-        <node name="vision" pkg="provospaceprogram" type="vision.py" output="screen"/>
+        <node name="vision" pkg="provospaceprogram" type="vision.py" output="screen">
+            <remap from="game" to="/game_state" />
+            <param name="is_team_home" value="$(eval team_side == 'home')" />
+        </node>
 
         <node name="ball_estimator_node" pkg="provospaceprogram" type="estimatornode.py" output="screen">
             <remap from="game" to="/game_state" />

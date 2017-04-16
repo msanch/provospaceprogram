@@ -3,6 +3,8 @@
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import Image
+from soccerref.msg import GameState as GameStateMsg
+from soccerobjects import GameState
 import datetime
 import numpy as np
 import rospy
@@ -31,25 +33,25 @@ class Vision:
     _FIELD_HEIGHT_PIXELS = _y_max - _y_min
 
     ally1_range = [
-        np.array([30, 10, 100]),
-        np.array([50, 255, 255])
+        np.array([0, 0, 0]),
+        np.array([0, 0, 0])
     ]
 
     ally2_range = [
-        np.array([30, 10, 100]),
-        np.array([50, 255, 255])
+        np.array([0, 0, 0]),
+        np.array([0, 0, 0])
     ]
 
     ball_range = [ # blue
-        np.array([73, 4, 215]),
-        np.array([113, 44, 255])
+        np.array([0, 0, 0]),
+        np.array([0, 0, 0])
     ]
 
-    current_range = ball_range
+    current_range = None
 
     min_hsv = [1, 0, 0]
     max_hsv = [179, 255, 255]
-    range_hsv = [25, 40, 30]
+    range_hsv = [35, 50, 40]
 
 
     def __init__(self):
@@ -58,11 +60,14 @@ class Vision:
         self.desired_pos2 = Pose2D()
         self.estimated_robot_pos = Pose2D()
         self.estimated_ball_pos = Pose2D()
+        self.game_state = GameState()
+        self.is_team_home = rospy.get_param('~is_team_home')
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos1)
         rospy.Subscriber('desired_skills_state2', Pose2D, self.receive_desired_pos2)
         rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
         rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
+        rospy.Subscriber('game', GameStateMsg, self.game_state.update)
         self.ball_pub = rospy.Publisher('ball', Pose2D, queue_size=10)
         self.ally1_pub = rospy.Publisher('ally1', Pose2D, queue_size=10)
         self.ally2_pub = rospy.Publisher('ally2', Pose2D, queue_size=10)
@@ -78,6 +83,10 @@ class Vision:
         return x, -y
 
     def world_to_image_coordinates(self, x, y):
+        if not self.is_team_home ^ self.game_state.second_half:
+            x *= -1
+            y *= -1
+
         x /= self._FIELD_WIDTH /  self._FIELD_WIDTH_PIXELS
         y /= -self._FIELD_HEIGHT / self._FIELD_HEIGHT_PIXELS
 
@@ -85,7 +94,6 @@ class Vision:
         y += self._FIELD_HEIGHT_PIXELS / 2
 
         return x, y
-
 
     def get_center_of_mass(self, moment):
         m10 = moment['m10']
@@ -105,6 +113,12 @@ class Vision:
                 print self.current_range
             else:
                 print self.image_to_world_coordinates(x, y)
+
+    def flip_coordinates(self, msg):
+        msg.x *= -1
+        msg.y *= -1
+        msg.theta += math.pi
+        msg.theta %= 2*math.pi
 
     def receive_desired_pos1(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
@@ -164,17 +178,24 @@ class Vision:
 
         im2, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
-        contour_moments = []
-        for contour in contours:
-            mm = cv2.moments(contour)
-            if 10 < mm['m00'] < 100:
-                contour_moments.append(mm)
-
-        if len(contour_moments) < 1:
+        if len(contours) < 1:
             cv2.imshow(name, mask)
             return
 
-        contour_moment = max(contour_moments, key=lambda m: m['m00'])
+        def sort_for_ball(moment):
+            ideal_ball_mass = 57
+            location_weight = 0.5
+            size_weight = 1.0
+            mass = moment['m00']
+            x, y = self.get_center_of_mass(moment)
+
+            size_error = abs(ideal_ball_mass - mass) * size_weight
+            location_error = math.sqrt((self.estimated_ball_pos.x - x)**2 + (self.estimated_ball_pos.y - y)**2) * location_weight
+            # print("mass = {}, x = {}, y={}, e_x = {}, e_y = {}\nsize error = {}, location error = {}".format(mass, x, y, self.estimated_ball_pos.x, self.estimated_ball_pos.y, size_error, location_error))
+
+            return size_error + location_error
+
+        contour_moment = min([cv2.moments(contour) for contour in contours], key=sort_for_ball)
 
         image_x, image_y = [int(x) for x in self.get_center_of_mass(contour_moment)]
         self.draw_rectangle(image_x, image_y, self.bgr_image)
@@ -188,18 +209,46 @@ class Vision:
 
         im2, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
-        contour_moments = []
-        for contour in contours:
-            mm = cv2.moments(contour)
-            if mm['m00'] > 50:
-                contour_moments.append(mm)
-
-        if len(contour_moments) < 2:
+        if len(contours) < 2:
             cv2.imshow(name, mask)
             return [None]*3
 
-        contour_moments.sort(key=lambda m: m['m00'])
-        mm_small, mm_large = contour_moments[-2:]
+        contour_moments = [cv2.moments(contour) for contour in contours]
+        
+        def error_for_robot(moment):
+            dist_weight = 0.9
+            color_weight = 1.0
+            x, y = [int(location) for location in self.get_center_of_mass(moment)]
+
+            dist_error = min([math.sqrt((x-x2)**2 + (y-y2)**2) for x2, y2 in [self.get_center_of_mass(m) for m in contour_moments if m is not moment]])
+            dist_error *= dist_weight
+            color_error = sum(abs(current - ((low + high) / 2)) for current, low, high in zip(self.hsv_image[y][x], *color_range))
+            color_error *= color_weight
+
+            # print(moment['m00'], x, y, dist_error, color_error, dist_error + color_error)
+            return dist_error + color_error
+
+        def get_robot_parts(moments):
+            first, second = None, None
+            first_error, second_error = 1e9, 1e9
+
+            for moment in moments:
+                error = error_for_robot(moment)
+                if error < first_error or not first:
+                    second = first
+                    second_error = first_error
+                    first = moment
+                    first_error = error
+                elif error < second_error or not second:
+                    second = moment
+                    second_error = error
+
+            if first['m00'] < second['m00']:
+                return first, second
+            else:
+                return second, first
+
+        mm_small, mm_large = get_robot_parts(contour_moments)
 
         image_large_x, image_large_y = self.get_center_of_mass(mm_large)
         image_small_x, image_small_y = self.get_center_of_mass(mm_small)
