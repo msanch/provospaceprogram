@@ -13,6 +13,7 @@ def main():
 
     # Get params
     is_player1 = rospy.get_param('~is_player1')
+    is_team_home = rospy.get_param('~is_team_home')
 
     # Create all soccer objects
     me   = Robot(is_player1=is_player1)
@@ -36,7 +37,11 @@ def main():
     while not rospy.is_shutdown():
         try:
             if game_state.reset_field:
-                coach.return_to_start(me)
+                is_home_now = is_team_home ^ game_state.second_half
+                if (is_home_now and game_state.home_penalty) or (not is_home_now and game_state.away_penalty):
+                    coach.penalty(me)
+                else:
+                    coach.return_to_start(me)
             elif game_state.play:
                 coach.make_play(me, ally, ball)
         except SoccerResetException:

@@ -29,3 +29,6 @@ class Strategy():
 
 	def return_to_start(self, robot_me):
 		self.tactics.return_to_start(robot_me)
+
+	def penalty(self, robot_me):
+		self.tactics.penalty(robot_me)

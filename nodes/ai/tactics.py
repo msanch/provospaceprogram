@@ -49,6 +49,9 @@ class Tactics():
 	def return_to_start(self, robot_me):
 		self.skills.move_to_xyt(robot_me.start_x(), 0, 0)
 
+	def penalty(self, robot_me):
+		self.skills.move_to_xyt(*robot_me.penalty_xyt())
+
 	def test_tactic(self, robot_me, ball):
 		angle_diff = util.get_angle_diff_from_points(robot_me.location, ball, soccerobjects.OPP_GOAL)
 		# print angle_diff

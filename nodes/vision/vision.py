@@ -58,14 +58,16 @@ class Vision:
         self.bridge = CvBridge()
         self.desired_pos1 = Pose2D()
         self.desired_pos2 = Pose2D()
-        self.estimated_robot_pos = Pose2D()
+        self.estimated_robot_pos1 = Pose2D()
+        self.estimated_robot_pos2 = Pose2D()
         self.estimated_ball_pos = Pose2D()
         self.game_state = GameState()
         self.is_team_home = rospy.get_param('~is_team_home')
         rospy.Subscriber('/usb_cam_away/image_raw', Image, self.receive_frame)
         rospy.Subscriber('desired_skills_state1', Pose2D, self.receive_desired_pos1)
         rospy.Subscriber('desired_skills_state2', Pose2D, self.receive_desired_pos2)
-        rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos)
+        rospy.Subscriber('ally1_estimator', Pose2D, self.receive_estimated_robot_pos1)
+        rospy.Subscriber('ally2_estimator', Pose2D, self.receive_estimated_robot_pos2)
         rospy.Subscriber('ball_estimator', Pose2D, self.receive_estimated_ball_pos)
         rospy.Subscriber('game', GameStateMsg, self.game_state.update)
         self.ball_pub = rospy.Publisher('ball', Pose2D, queue_size=10)
@@ -128,9 +130,13 @@ class Vision:
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
         self.desired_pos2 = msg
 
-    def receive_estimated_robot_pos(self, msg):
+    def receive_estimated_robot_pos1(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
-        self.estimated_robot_pos = msg
+        self.estimated_robot_pos1 = msg
+
+    def receive_estimated_robot_pos2(self, msg):
+        msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
+        self.estimated_robot_pos2 = msg
 
     def receive_estimated_ball_pos(self, msg):
         msg.x, msg.y = self.world_to_image_coordinates(msg.x, msg.y)
@@ -144,13 +150,14 @@ class Vision:
         self.bgr_image = self.bridge.imgmsg_to_cv2(image, 'bgr8')
         self.bgr_image = np.array([np.array(row[self._x_min:self._x_max+1]) for row in self.bgr_image[self._y_min:self._y_max+1]])
         self.hsv_image = cv2.cvtColor(self.bgr_image, cv2.COLOR_BGR2HSV)
-        self.process_ball('Ball', self.ball_range, self.ball_pub)
-        self.process_robot('Ally 1', self.ally1_range, self.ally1_pub)
-        self.process_robot('Ally 2', self.ally2_range, self.ally2_pub)
+        self.process_ball('Ball', self.ball_range, self.estimated_ball_pos, self.ball_pub)
+        self.process_robot('Ally 1', self.ally1_range, self.estimated_robot_pos1, self.ally1_pub)
+        self.process_robot('Ally 2', self.ally2_range, self.estimated_robot_pos2, self.ally2_pub)
         
         self.draw_rectangle(self.desired_pos1.x, self.desired_pos1.y, self.bgr_image, color=(0,0,255))
         self.draw_rectangle(self.desired_pos2.x, self.desired_pos2.y, self.bgr_image, color=(0,0,255))
-        self.draw_rectangle(self.estimated_robot_pos.x, self.estimated_robot_pos.y, self.bgr_image, color=(255,0,0))
+        self.draw_rectangle(self.estimated_robot_pos1.x, self.estimated_robot_pos1.y, self.bgr_image, color=(255,0,0))
+        self.draw_rectangle(self.estimated_robot_pos2.x, self.estimated_robot_pos2.y, self.bgr_image, color=(255,0,0))
         self.draw_rectangle(self.estimated_ball_pos.x, self.estimated_ball_pos.y, self.bgr_image, color=(255,0,0))
         cv2.imshow(window_name, self.bgr_image)
         cv2.setMouseCallback(window_name, self.calibration_callback)
@@ -171,7 +178,7 @@ class Vision:
         else:
             self.current_range = None
 
-    def process_ball(self, name, color_range, pub):
+    def process_ball(self, name, color_range, location, pub):
         mask = cv2.inRange(self.hsv_image, color_range[0], color_range[1])
         mask = cv2.GaussianBlur(mask, (3, 3), 0)
         cv2.imshow(name, mask)
@@ -190,7 +197,7 @@ class Vision:
             x, y = self.get_center_of_mass(moment)
 
             size_error = abs(ideal_ball_mass - mass) * size_weight
-            location_error = math.sqrt((self.estimated_ball_pos.x - x)**2 + (self.estimated_ball_pos.y - y)**2) * location_weight
+            location_error = math.sqrt((location.x - x)**2 + (location.y - y)**2) * location_weight
             # print("mass = {}, x = {}, y={}, e_x = {}, e_y = {}\nsize error = {}, location error = {}".format(mass, x, y, self.estimated_ball_pos.x, self.estimated_ball_pos.y, size_error, location_error))
 
             return size_error + location_error
@@ -203,9 +210,9 @@ class Vision:
         world_x, world_y = self.image_to_world_coordinates(image_x, image_y)
         pub.publish(Pose2D(x=world_x, y=world_y, theta=0))
 
-    def process_robot(self, name, color_range, pub):
+    def process_robot(self, name, color_range, location, pub):
         mask = cv2.inRange(self.hsv_image, color_range[0], color_range[1])
-        mask = cv2.GaussianBlur(mask, (3, 3), 0)
+        # mask = cv2.GaussianBlur(mask, (3, 3), 0)
 
         im2, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -218,15 +225,22 @@ class Vision:
         def error_for_robot(moment):
             dist_weight = 0.9
             color_weight = 1.0
-            x, y = [int(location) for location in self.get_center_of_mass(moment)]
+            location_weight = 1.0
+            size_weight = 1.0
+            mass = moment['m00']
+            ideal_mass1 = 150
+            ideal_mass2 = 420
+            x, y = [int(l) for l in self.get_center_of_mass(moment)]
 
-            dist_error = min([math.sqrt((x-x2)**2 + (y-y2)**2) for x2, y2 in [self.get_center_of_mass(m) for m in contour_moments if m is not moment]])
-            dist_error *= dist_weight
-            color_error = sum(abs(current - ((low + high) / 2)) for current, low, high in zip(self.hsv_image[y][x], *color_range))
-            color_error *= color_weight
+            dist_error = min([math.sqrt((x-x2)**2 + (y-y2)**2) for x2, y2 in
+                [self.get_center_of_mass(m) for m in contour_moments if m is not moment]]) * dist_weight
+            color_error = sum(abs(current - ((low + high) / 2)) for current, low, high in
+                zip(self.hsv_image[y][x], *color_range)) * color_weight
+            location_error = math.sqrt((location.x - x)**2 + (location.y - y)**2) * location_weight
+            size_error = min(abs(mass - ideal_mass1), abs(mass - ideal_mass2)) * size_weight
 
-            # print(moment['m00'], x, y, dist_error, color_error, dist_error + color_error)
-            return dist_error + color_error
+            # print "{}\tdist = {}, color = {}, loc = {}, size = {}, total = {}".format(moment['m00'], dist_error, color_error, location_error, size_error, dist_error + color_error + location_error + size_error)
+            return dist_error + color_error + location_error + size_error
 
         def get_robot_parts(moments):
             first, second = None, None
@@ -235,10 +249,8 @@ class Vision:
             for moment in moments:
                 error = error_for_robot(moment)
                 if error < first_error or not first:
-                    second = first
-                    second_error = first_error
-                    first = moment
-                    first_error = error
+                    first, second = moment, first
+                    first_error, second_error = error, first_error
                 elif error < second_error or not second:
                     second = moment
                     second_error = error
@@ -249,6 +261,7 @@ class Vision:
                 return second, first
 
         mm_small, mm_large = get_robot_parts(contour_moments)
+        # print('Picked', mm_small['m00'], mm_large['m00'])
 
         image_large_x, image_large_y = self.get_center_of_mass(mm_large)
         image_small_x, image_small_y = self.get_center_of_mass(mm_small)
@@ -259,8 +272,7 @@ class Vision:
         self.draw_rectangle(image_small_x, image_small_y, self.bgr_image)
         self.draw_rectangle(image_large_x, image_large_y, self.bgr_image)
         self.draw_rectangle(image_small_x + image_small_x - image_large_x,
-            image_small_y + image_small_y - image_large_y,
-            self.bgr_image, size=3)
+            image_small_y + image_small_y - image_large_y, self.bgr_image, size=3)
 
         cv2.imshow(name, mask)
 

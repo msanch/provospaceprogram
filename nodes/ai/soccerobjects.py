@@ -2,7 +2,7 @@
 
 import rospy
 import constants
-from math import sqrt
+from math import sqrt, pi
 
 class Vector2D:
 
@@ -82,6 +82,12 @@ class Robot:
 	def start_x(self):
 		return (-0.5 if self.is_player1 else -1.5)
 
+	def penalty_xyt(self):
+		x = -.05
+		y = 1 if self.is_player1 else -1
+		theta = pi / 2 * (-1 if self.is_player1 else 1)
+		return x, y, theta
+
 	def update(self, msg):
 		self.location.update(msg)
 		self.theta = msg.theta
@@ -89,7 +95,9 @@ class Robot:
 
 class GameState:
 
-	def __init__(self, home_score=0, away_score=0, home_bot_count=2, away_bot_count=2, remaining_seconds=120, play=False, reset_field=False, second_half=False):
+	def __init__(self, home_score=0, away_score=0, home_bot_count=2, away_bot_count=2,
+			remaining_seconds=120, play=False, reset_field=False,
+			home_penalty=False, away_penalty=False, second_half=False):
 		self.home_score        = home_score
 		self.away_score        = away_score
 		self.home_bot_count    = home_bot_count
@@ -97,6 +105,8 @@ class GameState:
 		self.remaining_seconds = remaining_seconds
 		self.play              = play
 		self.reset_field       = reset_field
+		self.home_penalty      = home_penalty
+		self.away_penalty      = away_penalty
 		self.second_half       = second_half
 
 	def update(self, msg):
@@ -107,6 +117,8 @@ class GameState:
 		self.remaining_seconds = msg.remaining_seconds
 		self.play              = msg.play
 		self.reset_field       = msg.reset_field
+		self.home_penalty      = msg.home_penalty
+		self.away_penalty      = msg.away_penalty
 		self.second_half       = msg.second_half
 
 class SoccerResetException(Exception):
