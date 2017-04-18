@@ -34,24 +34,27 @@ class Vision:
 
     ally1_range = [
         np.array([0, 0, 0]),
-        np.array([0, 0, 0])
+        np.array([0, 0, 0]),
+        0
     ]
 
     ally2_range = [
         np.array([0, 0, 0]),
-        np.array([0, 0, 0])
+        np.array([0, 0, 0]),
+        0
     ]
 
     ball_range = [ # blue
         np.array([0, 0, 0]),
-        np.array([0, 0, 0])
+        np.array([0, 0, 0]),
+        0
     ]
 
     current_range = None
 
     min_hsv = [1, 0, 0]
     max_hsv = [179, 255, 255]
-    range_hsv = [35, 50, 40]
+    range_hsv = [30, 255, 40]
 
 
     def __init__(self):
@@ -112,6 +115,7 @@ class Vision:
             if self.current_range is not None:
                 self.current_range[0] = np.array([max(val-r, m) for val, m, r in zip(hsv_pixel, self.min_hsv, self.range_hsv)])
                 self.current_range[1] = np.array([min(val+r, m) for val, m, r in zip(hsv_pixel, self.max_hsv, self.range_hsv)])
+                self.current_range[2] = hsv_pixel[0]
                 print self.current_range
             else:
                 print self.image_to_world_coordinates(x, y)
@@ -164,9 +168,6 @@ class Vision:
         char = cv2.waitKey(1)
         if char != -1:
             self.set_current_range(char)
-
-    def calibrate_parameter(self, color_range, index_1, index_2, r, m, new_value):
-        color_range[index_1][index_2] = new_value
 
     def set_current_range(self, char):
         if char == ord('b'):
@@ -225,22 +226,27 @@ class Vision:
         def error_for_robot(moment):
             dist_weight = 0.9
             color_weight = 1.0
-            location_weight = 1.0
-            size_weight = 1.0
+            location_weight = 0.5
+            size_weight = 0.5
             mass = moment['m00']
             ideal_mass1 = 150
             ideal_mass2 = 420
             x, y = [int(l) for l in self.get_center_of_mass(moment)]
 
+            if not (20 < mass < 1000):
+                return 1e9
+
             dist_error = min([math.sqrt((x-x2)**2 + (y-y2)**2) for x2, y2 in
                 [self.get_center_of_mass(m) for m in contour_moments if m is not moment]]) * dist_weight
-            color_error = sum(abs(current - ((low + high) / 2)) for current, low, high in
-                zip(self.hsv_image[y][x], *color_range)) * color_weight
+            color_error = 0
+            for yi in range(y-1, y+2):
+                for xi in range(x-1, x+2):
+                    color_error += abs(int(self.hsv_image[yi][xi][0]) - int(color_range[2])) * color_weight
             location_error = math.sqrt((location.x - x)**2 + (location.y - y)**2) * location_weight
-            size_error = min(abs(mass - ideal_mass1), abs(mass - ideal_mass2)) * size_weight
+            size_error = 0  # min(abs(mass - ideal_mass1), abs(mass - ideal_mass2)) * size_weight
 
-            # print "{}\tdist = {}, color = {}, loc = {}, size = {}, total = {}".format(moment['m00'], dist_error, color_error, location_error, size_error, dist_error + color_error + location_error + size_error)
-            return dist_error + color_error + location_error + size_error
+            print "{}\tx = {}, y = {}, dist = {}, color = {}, loc = {}, size = {}, total = {}".format(moment['m00'], x, y, dist_error, color_error, location_error, size_error, dist_error + color_error + location_error + size_error)
+            return dist_error + color_error  #  + location_error + size_error
 
         def get_robot_parts(moments):
             first, second = None, None
@@ -261,7 +267,7 @@ class Vision:
                 return second, first
 
         mm_small, mm_large = get_robot_parts(contour_moments)
-        # print('Picked', mm_small['m00'], mm_large['m00'])
+        print('Picked', mm_small['m00'], mm_large['m00'])
 
         image_large_x, image_large_y = self.get_center_of_mass(mm_large)
         image_small_x, image_small_y = self.get_center_of_mass(mm_small)
